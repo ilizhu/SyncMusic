@@ -890,7 +890,8 @@ class SyncMusic {
 						$this->unlockSearch();
 						$this->server->finish(["id" => $data['id'], "action" => "msg", "data" => "这首歌被设置不允许点播"]);
 					} elseif($musicUrl !== "") {
-						$musicId = Intval($m['id']);
+					//tmsdy 网易云音乐的id为纯数字，咪咕的带有字母
+						$musicId = $m['id'];
 						// 开始下载音乐
 						$musicData = $this->fetchMusic($m, $musicUrl);
 						$musicImage = $this->getMusicImage($m['pic_id']);

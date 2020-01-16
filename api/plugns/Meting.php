@@ -1274,17 +1274,17 @@ class Meting
         $url = array();
         $data =$data['resource'][0]['rateFormats'] ;
         foreach ($data as $vo) {
-            if ($vo['formatType'] == "PQ") {
+            if ($vo['formatType'] == "HQ") {
                 $url = array(
                     'url' => str_replace("ftp://218.200.160.122:21","http://freetyst.nf.migu.cn",$vo['url']) ,
                     'br'  => 320,
                 );
                 break;
             }
-            elseif ($vo['formatType'] == "HQ") {
+            elseif ($vo['formatType'] == "PQ") {
                     $url = array(
                         'url' => str_replace("ftp://218.200.160.122:21","http://freetyst.nf.migu.cn",$vo['url']) ,
-                        'br'  => 480,
+                        'br'  => 128,
                     );
                 break;
 

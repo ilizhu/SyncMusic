@@ -1,9 +1,9 @@
 <?php
 // 你的 API 服务器地址
-define("API_URL", "https://cdn.zerodream.net/netease");
+define("API_URL", "http://192.168.1.107/api");
 if(isset($_GET['s']) && !empty($_GET['s'])) {
 	$keyWord = urlencode($_GET['s']);
-	$rawdata = @file_get_contents(API_URL . "/api.php?source=netease&types=search&name={$keyWord}&count=10&pages=1");
+	$rawdata = @file_get_contents(API_URL . "/api.php?source=migu&types=search&name={$keyWord}&count=50&pages=1");
 	$data = json_decode($rawdata, true);
 	if(!$data || empty($data)) {
 		if(isset($_GET['debug'])) {
@@ -24,8 +24,18 @@ function getArtists($data) {
 	} else {
 		$artists = $data[0];
 	}
-	return $artists;
+	$musicName = (mb_strlen($artists) > 40) ? mb_substr($artists, 0, 38) . "..." : $artists;
+	return $musicName;
 }
+function getShortName($data) {
+	 
+    $musicName = (mb_strlen($data) > 32) ? mb_substr($data, 0, 30) . "..." : $data;
+ 
+	return $musicName;
+}
+
+
+
 ?>
 <html>
 	<head>
@@ -35,8 +45,8 @@ function getArtists($data) {
 		<meta http-equiv="X-UA-Compatible" content="IE=11">
 		<title>SyncMusic - 在线点歌</title>
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-		<link rel="stylesheet" href="https://cdn.zerodream.net/css/materialize.min.css">
-		<link rel="stylesheet" href="https://cdn.zerodream.net/font-awesome/css/font-awesome.min.css">
+		<link rel="stylesheet" href="./css/materialize.min.css">
+		<link rel="stylesheet" href="./css/font-awesome.min.css">
 		<style>.table tr{font-size:14px;}.table .result:hover{cursor:pointer;color:#009688 !important;}.table tr th,.table tr td{white-space: nowrap;}</style>
 	</head>
 	<body style="display: none;">
@@ -48,17 +58,19 @@ function getArtists($data) {
 			</tr>
 			<?php
 			foreach($data as $music) {
-				echo "<tr class='result' onclick='select({$music['id']})'>
-				<td>{$music['name']}</td>
+				
+				echo "<tr class='result' onclick='select(\"{$music['id']}\")'>
+				<td>" . getShortName($music['name']) . "</td>   
 				<td>" . getArtists($music['artist']) . "</td>
-				<td>{$music['album']}</td>
+				<td>" . getShortName($music['album']) . "</td>
+			 
 			</tr>";
 			}
 			?>
 		</table>
 	</body>
-	<script type="text/javascript" src="https://cdn.zerodream.net/js/jquery.min.js"></script>
-	<script type="text/javascript" src="https://cdn.zerodream.net/js/materialize.min.js"></script>
+	<script type="text/javascript" src="./js/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/materialize.min.js"></script>
 	<script type="text/javascript">
 	function select(data) {
 		try {

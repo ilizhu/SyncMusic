@@ -22,13 +22,14 @@ class SyncMusic {
 	private $debug;
 	private $getIpMethod;
 	private $musicApi;
+	private $musicSource;
 	
 	/**
 	 *
 	 *  Construct 定义服务器基础信息
 	 *
 	 */
-	public function __construct($bindHost, $bindPort, $adminPass, $workersNum, $debug, $getIpMethod, $musicApi)
+	public function __construct($bindHost, $bindPort, $adminPass, $workersNum, $debug, $getIpMethod, $musicApi,$musicSource)
 	{
 		$this->bindHost    = $bindHost;
 		$this->bindPort    = $bindPort;
@@ -37,6 +38,7 @@ class SyncMusic {
 		$this->debug       = $debug;
 		$this->getIpMethod = $getIpMethod;
 		$this->musicApi    = $musicApi;
+		$this->musicSource    = $musicSource;
 	}
 	
 	/**
@@ -46,6 +48,13 @@ class SyncMusic {
 	 */
 	public function checkDataFolder()
 	{
+				/*tmsdy 尝试添加去验证*/
+		$stream_opts = [
+			"ssl" => [
+			"verify_peer"=>false,
+			"verify_peer_name"=>false,
+			]
+		];
 		if(!file_exists(ROOT . "/tmp/")) mkdir(ROOT . "/tmp/");
 		if(!file_exists(ROOT . "/random.txt")) {
 			$data = @file_get_contents("https://cdn.zerodream.net/download/music/random.txt");
@@ -372,7 +381,7 @@ class SyncMusic {
 										]));
 									}
 									
-								} elseif(mb_substr($json['data'], 0, 3) == "换歌 " && mb_strlen($json['data']) > 3) {
+								} elseif(mb_substr($json['data'], 0, 3) == "置顶 " && mb_strlen($json['data']) > 3) {
 									
 									// 如果是交换歌曲顺序的命令，先判断是否是管理员
 									if($this->isAdmin($clientIp)) {
@@ -416,13 +425,13 @@ class SyncMusic {
 												// 发送通知
 												$server->push($frame->fd, json_encode([
 													"type" => "msg",
-													"data" => "音乐切换成功"
+													"data" => "音乐置顶成功"
 												]));
 											}
 										} else {
 											$server->push($frame->fd, json_encode([
 												"type" => "msg",
-												"data" => "要切换的歌曲不能为空"
+												"data" => "要置顶的歌曲不能为空"
 											]));
 										}
 									} else {
@@ -1174,8 +1183,8 @@ class SyncMusic {
 	 */
 	private function getMusicUrl($id)
 	{
-		echo $this->debug ? $this->consoleLog("Http Request >> {$this->musicApi}/api.php?source=netease&types=url&id={$id}", 0) : "";
-		$rawdata = @file_get_contents("{$this->musicApi}/api.php?source=netease&types=url&id={$id}");
+		echo $this->debug ? $this->consoleLog("Http Request >> {$this->musicApi}/api.php?source={$this->musicSource}&types=url&id={$id}", 0) : "";
+		$rawdata = @file_get_contents("{$this->musicApi}/api.php?source={$this->musicSource}&types=url&id={$id}");
 		$json    = json_decode($rawdata, true);
 		echo $this->debug ? $this->consoleLog("Http Request << {$rawdata}", 0) : "";
 		if($json && isset($json["url"])) {
@@ -1190,11 +1199,18 @@ class SyncMusic {
 	 *  GetMusicLrcs 获取音乐的歌词
 	 *
 	 */
-	private function getMusicLrcs($id)
+	private function getMusicLrcsOld($id)
 	{
+				/*tmsdy 尝试添加去验证*/
+		$stream_opts = [
+			"ssl" => [
+			"verify_peer"=>false,
+			"verify_peer_name"=>false,
+			]
+		];
 		if(!file_exists(ROOT . "/tmp/{$id}.lrc")) {
 			echo $this->debug ? $this->consoleLog("Http Request >> https://music.163.com/api/song/lyric?os=pc&lv=-1&id={$id}", 0) : "";
-			$musicLrcs = @file_get_contents("https://music.163.com/api/song/lyric?os=pc&lv=-1&id={$id}");
+			$musicLrcs = @file_get_contents("https://music.163.com/api/song/lyric?os=pc&lv=-1&id={$id}", false, stream_context_create($stream_opts));
 			echo $this->debug ? $this->consoleLog("Http Request << " . substr($musicLrcs, 0, 256), 0) : "";
 			if(strlen($musicLrcs) > 0) {
 				@file_put_contents(ROOT . "/tmp/{$id}.lrc", $musicLrcs);
@@ -1213,7 +1229,32 @@ class SyncMusic {
 		}
 		return $lrcs;
 	}
-	
+		/**
+	 *
+	 *  GetMusicImage 获取音乐的歌词 tmsdy
+	 *
+	 */
+	private function getMusicLrcs($id)
+	{
+        if(!file_exists(ROOT . "/tmp/{$id}.lrc")) {
+            echo $this->debug ? $this->consoleLog("Http Request >> {$this->musicApi}/api.php?source={$this->musicSource}&types=lyric&id={$id}", 0) : "";
+            $rawdata = @file_get_contents("{$this->musicApi}/api.php?source={$this->musicSource}&types=lyric&id={$id}");
+            $lrcdata = json_decode($rawdata, true);
+            echo $this->debug ? $this->consoleLog("Http Request << {$rawdata}", 0) : "";
+            //unicode解码
+            $json =  $lrcdata['lyric'] ; 
+            if(empty($json)) return "[00:01.00]暂无歌词";
+            @file_put_contents(ROOT . "/tmp/{$id}.lrc", $json);
+            return $json;
+ 		} else {
+			$musicLrcs = @file_get_contents(ROOT . "/tmp/{$id}.lrc");
+            $lrcs = "[00:01.00]暂无歌词";
+            if($musicLrcs) {
+                $lrcs =$musicLrcs;
+            }
+            return $lrcs;
+		}
+	}
 	/**
 	 *
 	 *  GetMusicImage 获取音乐的专辑封面图片地址
@@ -1221,8 +1262,8 @@ class SyncMusic {
 	 */
 	private function getMusicImage($picId)
 	{
-		echo $this->debug ? $this->consoleLog("Http Request >> {$this->musicApi}/api.php?source=netease&types=pic&id={$picId}", 0) : "";
-		$rawdata = @file_get_contents("{$this->musicApi}/api.php?source=netease&types=pic&id={$picId}");
+		echo $this->debug ? $this->consoleLog("Http Request >> {$this->musicApi}/api.php?source={$this->musicSource}&types=pic&id={$picId}", 0) : "";
+		$rawdata = @file_get_contents("{$this->musicApi}/api.php?source={$this->musicSource}&types=pic&id={$picId}");
 		$imgdata = json_decode($rawdata, true);
 		echo $this->debug ? $this->consoleLog("Http Request << {$rawdata}", 0) : "";
 		return $imgdata['url'] ?? "";
@@ -1248,13 +1289,15 @@ EOF;
 		foreach($sourceList as $mid => $mi) {
 			$userNick = $this->getUserNickname($mi['user']) ?? "匿名用户";
 			$user = "{$userNick} (" . $this->getMarkName($mi['user']) . ")";
+			//tmsdy 隐藏过长的专辑名
+			$albumName = (mb_strlen($mi['album']) > 32) ? mb_substr($mi['album'], 0, 30) . "..." : $mi['album'];
 			$musicName = (mb_strlen($mi['name']) > 32) ? mb_substr($mi['name'], 0, 30) . "..." : $mi['name'];
 			$playList .= <<<EOF
 <tr>
 	<td>{$mid}</td>
 	<td>{$musicName}</td>
 	<td>{$mi['artists']}</td>
-	<td>{$mi['album']}</td>
+	<td>{$albumName}</td>
 	<td>{$user}</td>
 </tr>
 EOF;
@@ -1655,13 +1698,50 @@ EOF;
 	 */
 	private function fetchMusicApi($keyWord)
 	{
+		if (($this->musicSource == "migu") &&(strlen($keyWord) == 11 ) && substr($keyWord,0,1) == "6")
+		{
+			$type = "song";
+			$name = "id";
+		}
+		else
+		{
+			$type = "search";
+			$name = "name";
+		}
 		$keyWord = urlencode($keyWord);
-		echo $this->debug ? $this->consoleLog("Http Request >> {$this->musicApi}/api.php?source=netease&types=search&name={$keyWord}&count=1&pages=1", 0) : "";
-		$rawdata = @file_get_contents("{$this->musicApi}/api.php?source=netease&types=search&name={$keyWord}&count=1&pages=1");
+		echo $this->debug ? $this->consoleLog("Http Request >> {$this->musicApi}/api.php?source={$this->musicSource}&types={$type}&{$name}={$keyWord}&count=1&pages=1", 0) : "";
+		$rawdata = @file_get_contents("{$this->musicApi}/api.php?source={$this->musicSource}&types={$type}&{$name}={$keyWord}&count=1&pages=1");
 		echo $this->debug ? $this->consoleLog("Http Request << {$rawdata}", 0) : "";
 		return json_decode($rawdata, true);
 	}
 	
+	/*shidy 尝试用curl替换*/
+	private function http_request($url,$timeout=30,$header=array()){ 
+        if (!function_exists('curl_init')) { 
+            throw new Exception('server not install curl'); 
+        } 
+        $ch = curl_init(); 
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+        curl_setopt($ch, CURLOPT_HEADER, true); 
+        curl_setopt($ch, CURLOPT_URL, $url); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout); 
+        $data = curl_exec($ch); 
+        list($header, $data) = explode("\r\n\r\n", $data); 
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE); 
+        if ($http_code == 301 || $http_code == 302) { 
+            $matches = array(); 
+            preg_match('/Location:(.*?)\n/', $header, $matches); 
+            $url = trim(array_pop($matches)); 
+            curl_setopt($ch, CURLOPT_URL, $url); 
+            curl_setopt($ch, CURLOPT_HEADER, false); 
+            $data = curl_exec($ch); 
+        } 
+        if ($data == false) { 
+            curl_close($ch); 
+        } 
+        @curl_close($ch); 
+        return $data; 
+	} 
 	/**
 	 *
 	 *  FetchMusic 读取音乐文件内容
@@ -1669,10 +1749,20 @@ EOF;
 	 */
 	private function fetchMusic($m, $download = '')
 	{
+		/*tmsdy 尝试添加去验证*/
+		$stream_opts = [
+			"ssl" => [
+			"verify_peer"=>false,
+			"verify_peer_name"=>false,
+			]
+		];
 		if(!file_exists(ROOT . "/tmp/{$m['id']}.mp3")) {
 			$this->consoleLog("歌曲 {$m['name']} 不存在，下载中...", 1, true);
-			$musicFile = @file_get_contents($download);
-			$this->consoleLog("歌曲 {$m['name']} 下载完成。", 1, true);
+			$this->consoleLog("URL: {$download} ", 1, true);
+			//$musicFile = @file_get_contents($download, false, stream_context_create($stream_opts));
+			$musicFile = $this->http_request($download);
+			$contentlength = mb_strlen($musicFile);
+			$this->consoleLog("歌曲 {$m['name']} 下载完成。{$contentlength}", 1, true);
 			@file_put_contents(ROOT . "/tmp/{$m['id']}.mp3", $musicFile);
 		} else {
 			$musicFile = @file_get_contents(ROOT . "/tmp/{$m['id']}.mp3");

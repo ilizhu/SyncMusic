@@ -40,7 +40,7 @@ define("WORKERNUM", 32);
 define("DEBUG", false);
 
 // 是否使用 X-Real-IP 来获取客户端 IP，适用于 Nginx 反代后的 WebSocket
-define("USE_X_REAL_IP", true);
+define("USE_X_REAL_IP", false);
 
 // 是否使用 Redis 来储存歌单数据
 define("USE_REDIS", true);
@@ -56,8 +56,9 @@ define("REDIS_PASS", "");
 
 // 音乐信息获取 API，默认是 ZeroDream 的 API
 // 可自行搭建，参考：https://github.com/mengkunsoft/MKOnlineMusicPlayer
-define("MUSIC_API", "https://cdn.zerodream.net/netease");
+define("MUSIC_API", "http://192.168.1.107/api/");
 
+define("MUSIC_SOURCE", "migu");
 // Python3 可执行文件位置
 define("PYTHON_EXEC", "/usr/bin/python3");
 
@@ -78,6 +79,6 @@ define("MAX_USERMUSIC", 5);
  *  开始运行服务器，请勿修改
  *
  */
-$syncMusic = new SyncMusic(BIND_HOST, BIND_PORT, ADMIN_PASS, WORKERNUM, DEBUG, USE_X_REAL_IP, MUSIC_API);
+$syncMusic = new SyncMusic(BIND_HOST, BIND_PORT, ADMIN_PASS, WORKERNUM, DEBUG, USE_X_REAL_IP, MUSIC_API,MUSIC_SOURCE);
 $syncMusic->init();
 $syncMusic->run();

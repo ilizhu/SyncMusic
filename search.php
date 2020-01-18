@@ -1,18 +1,32 @@
 <?php
 // 你的 API 服务器地址
 define("API_URL", "http://192.168.1.107/api");
+$pagerows = 50;
+if(isset($_GET['p']) && !empty($_GET['p']) ) {
+	$page =  intval($_GET['p']);
+} else {
+	$page =  1;
+} 
+if( $page <= 1)
+{
+	$prev = 1;
+}else{
+	$prev = $page-1;
+}
+$next = $page+1;
 if(isset($_GET['s']) && !empty($_GET['s'])) {
 	$keyWord = urlencode($_GET['s']);
-	$rawdata = @file_get_contents(API_URL . "/api.php?source=migu&types=search&name={$keyWord}&count=50&pages=1");
+	$rawdata = @file_get_contents(API_URL . "/api.php?source=migu&types=search&name={$keyWord}&count={$pagerows}&pages={$page}");
 	$data = json_decode($rawdata, true);
+	$resultcount = count($data);
 	if(!$data || empty($data)) {
 		if(isset($_GET['debug'])) {
 			exit($rawdata);
 		}
-		exit("<center><p>无搜索结果</p></center>");
+		echo("<center><p>无搜索结果</p></center>");
 	}
 } else {
-	exit("<center><p>未输入搜索内容</p></center>");
+	exit("<center><p>正在搜索中……</p></center>");
 }
 function getArtists($data) {
 	if(count($data) > 1) {
@@ -68,6 +82,24 @@ function getShortName($data) {
 			}
 			?>
 		</table>
+		<table ><tr >
+		<?php
+		if($page != 1)
+		{
+			echo "<td><a href='?s=".$keyWord."&p=".$prev."'>上一页</a> </td>";
+		}
+		else
+		{
+			if($resultcount ==  $pagerows){
+				echo "<td> 没有上一页了 </td>";
+			}
+		}
+		if($resultcount ==  $pagerows)
+		{
+			echo "<td><a href='?s=".$keyWord."&p=".$next."'>下一页</a></td> ";
+		}
+		?>
+		</tr></table>
 	</body>
 	<script type="text/javascript" src="./js/jquery.min.js"></script>
 	<script type="text/javascript" src="./js/materialize.min.js"></script>

@@ -161,11 +161,16 @@
 		// 搜索功能
 		function checkInput() {
 			var userInput = $("#msginput").val();
+			let lastkeyword = localStorage.getItem("keyword");
 			userInput = userInput.replace(/点歌 /g, "");
 			if(userInput != "") {
+				if(userInput != lastkeyword)
+				{ 
 				search.src = "search.php?s=" + encodeURIComponent(userInput);
+				}
 				setTimeout("$(search).fadeIn();", 500);
 				openedEmoji = true;
+			    localStorage.setItem('keyword', userInput);
 			}
 		}
 		

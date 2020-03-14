@@ -109,18 +109,88 @@
 					<p>当前一共在线 <online id="online-user">0</online> 人</p>
 					<div id="chatdata"><button onclick="connect()" class="btn btn-primary">连接服务器</button></div>
 					<div class="input-group">
-						<input type="text" id="msginput" class="form-control input white-text" placeholder="消息内容"></input>
-						<span class="input-group-btn">
-							<button onclick="sendmsg()" id="sendmsgbtn" class="btn btn-primary full-width">发送</button>
-						</span>
+						<input type="text" id="msginput" class="form-control input white-text" placeholder="消息内容"  style="width: 70%;"></input> 
+				
+						 
+						<span class="input-group-btn" >
+							<button onclick="sendmsg()" id="sendmsgbtn" class="btn btn-primary" style="width: 25%;" >发送</button>
+						</span>		
+					 
+						 <button onclick="checkInput()" id="opensearch" class="btn btn-primary">搜索音乐</button>
+						 
+						 <button onclick="openedEmoji=true;$(faces).fadeIn();" id="openfaces" class="btn btn-primary">表情</button>
+						 
+						 <button onclick="msginput.value='投票切歌';sendmsg();"   class="btn btn-primary">投票切歌</button>
+						 <button onclick="msginput.value='小点声';sendmsg();" class="btn btn-primary">小声</button>
+						 <button onclick="msginput.value='大点声';sendmsg();"  class="btn btn-primary">大声</button>
+						 
 					</div>
-					<p class="actionInput">
-						<a onclick="openedEmoji=true;$(faces).fadeIn();" id="openfaces">[ 发送表情 ]</a>&nbsp;&nbsp;
-						<a onclick="msginput.value='投票切歌';sendmsg();">[ 投票切歌 ]</a>&nbsp;&nbsp;
-						<a onclick="checkInput();" id="opensearch">[ 搜索音乐 ]</a><br>
-						<a onclick="msginput.value='大点声';sendmsg();">[ 大点声 ]</a>&nbsp;&nbsp;
-						<a onclick="msginput.value='小点声';sendmsg();">[ 小点声 ]</a>&nbsp;&nbsp;
-					</p>
+					 <p style = "font-size:10px">---------------------听不懂的---------------------</p>
+					<div class="singer"> 
+					<a onclick="searchsinger('Ariana Grande');"  id="searchsinger">A妹</a>
+					<a onclick="searchsinger('Adele');"  id="searchsinger">阿呆</a>
+					
+					<a onclick="searchsinger('Justin Bieber');"  id="searchsinger">JB</a>
+					<a onclick="searchsinger('lady gaga');"  id="searchsinger">gaga</a>
+					<a onclick="searchsinger('Billie Eilish');"  id="searchsinger">碧莉</a>
+					<a onclick="searchsinger('Sia');"  id="searchsinger">洗牙</a> 
+					<a onclick="searchsinger('P!nk');" id="searchsinger">粉妈</a> 
+					<a onclick="searchsinger('Queen');" id="searchsinger">Queen</a> 
+					<a onclick="searchsinger('taylor swift');" id="searchsinger">霉霉</a>
+					<a onclick="searchsinger('Katy Perry');" id="searchsinger">水果姐</a>   
+					<a onclick="searchsinger('Cardi B');" id="searchsinger">卡老师</a>     <br>
+					<a onclick="searchsinger('Nicki Minaj');" id="searchsinger">麻辣鸡</a>
+					<a onclick="searchsinger('Rihanna');" id="searchsinger">日日</a>
+					<a onclick="searchsinger('Drake');" id="searchsinger">公鸭</a>
+					  
+					<a onclick="searchsinger('Bruno Mars');" id="searchsinger">火星哥</a>
+					<a onclick="searchsinger('Maroon 5');" id="searchsinger">Maroon 5</a>  
+					<a onclick="searchsinger('Imagine Dragons');" id="searchsinger">梦龙</a>  
+					<a onclick="searchsinger('eminem');" id="searchsinger">姆爷</a>
+					<a onclick="searchsinger('Ed Sheeran');"  id="searchsinger">黄老板</a>   
+					<a onclick="searchsinger('Charlie Puth');" id="searchsinger">断眉</a>   <br>
+				</div>
+				
+				<p style = "font-size:10px">---------------------听得懂的---------------------</p>
+				<div class="singer"> 
+					<a onclick="searchsinger('周杰伦');" id="searchsinger">周董</a>  
+					<a onclick="searchsinger('陈奕迅');" id="searchsinger">陈奕迅</a>
+					<a onclick="searchsinger('朴树');" id="searchsinger">朴师傅</a>   
+					<a onclick="searchsinger('五月天');" id="searchsinger">五月天</a>   
+					<a onclick="searchsinger('王力宏');" id="searchsinger">王力宏</a>	
+					<a onclick="searchsinger('张学友');" id="searchsinger">张学友</a>
+					<a onclick="searchsinger('孙燕姿');" id="searchsinger">孙燕姿</a> 
+					<a onclick="searchsinger('梁静茹');" id="searchsinger">梁静茹</a>  <br>
+					
+					<a onclick="searchsinger('邓丽君');" id="searchsinger">邓丽君</a> 
+					<a onclick="searchsinger('谭咏麟');" id="searchsinger">谭咏麟</a> 
+					
+					<a onclick="searchsinger('林俊杰');" id="searchsinger">林俊杰</a> 
+					<a onclick="searchsinger('李健');" id="searchsinger">李健</a> 
+					<a onclick="searchsinger('羽泉');" id="searchsinger">羽泉</a> 
+					<a onclick="searchsinger('韩红');" id="searchsinger">韩胖胖</a> 
+					<a onclick="searchsinger('邓紫棋');" id="searchsinger">邓紫棋</a>
+
+					<a onclick="searchsinger('李荣浩');" id="searchsinger">李荣浩</a>     <br>
+					
+					<a onclick="searchsinger('蔡依林');" id="searchsinger">蔡依林</a>
+					<a onclick="searchsinger('S.H.E');" id="searchsinger">S.H.E</a>
+						
+					
+					<a onclick="searchsinger('罗大佑');" id="searchsinger">罗大佑</a>
+					<a onclick="searchsinger('李宗盛');" id="searchsinger">李宗盛</a>
+					<a onclick="searchsinger('周华健');" id="searchsinger">周华健</a>
+					<a onclick="searchsinger('张震岳');" id="searchsinger">张震岳</a>
+					<a onclick="searchsinger('齐秦');" id="searchsinger">齐秦</a>
+					<a onclick="searchsinger('伍佰');" id="searchsinger">伍佰</a>
+					
+				 
+					<a onclick="searchsinger('张杰');" id="searchsinger">张杰</a>  <br>
+					<a onclick="searchsinger('苏打绿');" id="searchsinger">苏打绿</a>
+					
+				
+					</div>
+				 <p>↑↑↑↑↑↑↑↑直接点上面的歌手，即可点歌↑↑↑↑↑↑↑↑<br></p>
 					<p>点歌方式一：输入 [点歌 歌名] 即可点歌。<br>例如：点歌 See You Again<br></p>
 					<p>点歌方式二：输入歌名，点上方 [搜索音乐]按钮，然后选择你要的音乐。</p>
 					<p>遇到不好听的歌可以点击 [投票切歌]，超过在线人数30%就会切歌。</p>
@@ -133,7 +203,7 @@
 					 
 					</p>
 					[置顶 3]代表置顶id为3的歌</p> [禁言 ip]（把指定的人禁言）</p>[解禁]，[禁言列表]，[加黑名单] (把当前歌曲加入黑名单)。</p>
-					<iframe src="/search.php" style="display: none;border: 0px;width: 100%;height: 700px;width: 800px;position: relative;top: -1100px ; left:-850px;background: #F1F1F1;border: 12px solid rgba(255,255,255,0.0);border-radius: 8px;box-shadow: 0px 0px 16px rgba(0,0,0,0.8);" id="search"></iframe>
+					<iframe src="/search.php" style="display: none;border: 0px;width: 100%;height: 700px;width: 800px;position: fixed;top: 10%;left: 15%;background: #F1F1F1;border: 12px solid rgba(255,255,255,0.0);border-radius: 8px;box-shadow: 0px 0px 16px rgba(0,0,0,0.8);" id="search"></iframe>
 					<iframe src="/face.html?s=3" style="display: none;border: 0px;width: 70vw;height: 70vh;position: fixed;top: 15vh;left: 15vw;background: #F1F1F1;border: 12px solid rgba(255,255,255,0.0);border-radius: 8px;box-shadow: 0px 0px 16px rgba(0,0,0,0.8);" id="faces"></iframe>
 				</div>
 			</div>
@@ -170,10 +240,26 @@
 				}
 				setTimeout("$(search).fadeIn();", 500);
 				openedEmoji = true;
-			    localStorage.setItem('keyword', userInput);
+				//这里仅适用于migu的ID
+				if((userInput.indexOf("6") != 0) || (userInput.length != 11))
+				{
+					localStorage.setItem('keyword', userInput); 
+				}
 			}
 		}
-		
+				// 搜索功能
+		function searchsinger(msg) {
+			var userInput = msg;
+			  
+			if(userInput != "") {
+			
+				search.src = "search.php?s=" + encodeURIComponent(userInput);
+
+				setTimeout("$(search).fadeIn();", 1000);
+		 
+				openedEmoji = true;
+			}
+		}
 		// 暂停音乐
 		function setPause() {
 			if(paused) {
@@ -188,7 +274,7 @@
 		
 		// 关闭窗口
 		function checkElement(event) {
-			if(openedEmoji && event.target != faces && event.target != openfaces && event.target != search && event.target != opensearch) {
+			if(openedEmoji && event.target != faces && event.target != openfaces && event.target != search && event.target != opensearch  && event.target.id != "searchsinger" ) {
 				$(faces).fadeOut();
 				$(search).fadeOut();
 				openedEmoji = false;
@@ -328,6 +414,12 @@
 				sendmsgbtn.disabled = false;
 				$(msginput).focus();
 			}, 3000);
+			var keyword = localStorage.getItem("keyword");
+			//这里仅适用于migu的ID
+			if((keyword.indexOf("6") != 0) || (keyword.length != 11))
+			{
+				window.parent.msginput.value = localStorage.getItem("keyword");
+			}
 		}
 		
 		// 连接服务器

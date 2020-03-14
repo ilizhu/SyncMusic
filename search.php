@@ -106,9 +106,13 @@ function getShortName($data) {
 	<script type="text/javascript">
 	function select(data) {
 		try {
+		//修改为点击即点歌  提高效率
 			window.parent.msginput.value = "点歌 " + data;
-			window.parent.$(window.parent.search).fadeOut();
-			window.parent.$(window.parent.msginput).focus();
+			window.parent.sendmsg();
+			//window.parent.$(window.parent.search).fadeOut();
+			
+			//window.parent.$(window.parent.msginput).focus();
+			
 		} catch(e) {
 			// No
 		}

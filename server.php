@@ -1,11 +1,11 @@
 <?php
 /**
- *    __________    ____                   __  __           _      
- *   |  _____   |  / ___| _   _ _ __   ___|  \/  |_   _ ___(_) ___ 
+ *    __________    ____                   __  __           _
+ *   |  _____   |  / ___| _   _ _ __   ___|  \/  |_   _ ___(_) ___
  *   |  |    |  |  \___ \| | | | '_ \ / __| |\/| | | | / __| |/ __|
- *   |  |    |  |   ___) | |_| | | | | (__| |  | | |_| \__ \ | (__ 
+ *   |  |    |  |   ___) | |_| | | | | (__| |  | | |_| \__ \ | (__
  *  /   |   /   |  |____/ \__, |_| |_|\___|_|  |_|\__,_|___/_|\___|
- * |___/   |___/          |___/                                    
+ * |___/   |___/          |___/
  *
  * 此项目使用 GPL v3 协议开放源代码，您可以在遵守本协议的前提下自由修改使用
  *
@@ -28,7 +28,7 @@ define("ROOT", __DIR__);
 define("BIND_HOST", "0.0.0.0");
 
 // WebSocket 服务器监听端口，默认 811
-define("BIND_PORT", 811);
+define("BIND_PORT", 9501);
 
 // 房管密码
 define("ADMIN_PASS", "123456789");
@@ -37,16 +37,16 @@ define("ADMIN_PASS", "123456789");
 define("WORKERNUM", 32);
 
 // 是否启用调试模式，可以输出详细信息
-define("DEBUG", false);
+define("DEBUG", true);
 
 // 是否使用 X-Real-IP 来获取客户端 IP，适用于 Nginx 反代后的 WebSocket
 define("USE_X_REAL_IP", false);
 
 // 是否使用 Redis 来储存歌单数据
-define("USE_REDIS", true);
+define("USE_REDIS", false);
 
 // Redis 地址
-define("REDIS_HOST", "127.0.0.1");
+define("REDIS_HOST", "redis");
 
 // Redis 端口
 define("REDIS_PORT", "6379");
@@ -56,7 +56,7 @@ define("REDIS_PASS", "");
 
 // 音乐信息获取 API，默认是 ZeroDream 的 API
 // 可自行搭建，参考：https://github.com/mengkunsoft/MKOnlineMusicPlayer
-define("MUSIC_API", "http://192.168.1.107/api/");
+define("MUSIC_API", "http://127.0.0.1/api");
 
 define("MUSIC_SOURCE", "migu");
 // Python3 可执行文件位置

@@ -1,23 +1,10 @@
-<!--
-    __________    ____                   __  __           _      
-   |  _____   |  / ___| _   _ _ __   ___|  \/  |_   _ ___(_) ___ 
-   |  |    |  |  \___ \| | | | '_ \ / __| |\/| | | | / __| |/ __|
-   |  |    |  |   ___) | |_| | | | | (__| |  | | |_| \__ \ | (__ 
-  /   |   /   |  |____/ \__, |_| |_|\___|_|  |_|\__,_|___/_|\___|
- |___/   |___/          |___/                                    
-
- 此项目使用 GPL v3 协议开放源代码，您可以在遵守本协议的前提下自由修改使用
-
- 作者：Akkariin Meiko | QQ：204034 | Telegram：Akkariins
-
--->
 <html>
 	<head>
 		<meta name="theme-color" content="#009688" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=11">
-		<title>SyncMusic - 在线点歌</title>
+		<title>❤点歌台❤</title>
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 		<link rel="stylesheet" href="./css/materialize.min.css">
 		<link rel="stylesheet" href="./css/font-awesome.min.css">
@@ -39,37 +26,6 @@
 				<i class="fa fa-play fa-stack-1x fa-inverse" style="position: relative;left: 6px;"></i>
 			</span>
 		</div>
-		<nav class="topbar-fixed">
-			<div class="nav-wrapper teal">
-				<ul id="nav-mobile" class="left">
-					<li><a href="#" data-target="slide-out" class="sidenav-trigger waves-effect" style="display: inline-block;"><i class="material-icons">menu</i></a></li>
-					<li><a href="#" class="logo-text waves-effect"> SyncMusic 在线点歌台</a></li>
-				</ul>
-			</div>
-		</nav>
-		<ul id="slide-out" class="sidenav">
-			<li>
-				<div class="user-view">
-					<div class="background">
-						<div class="background-black"></div>
-						<img src="https://akariin.dev/images/background.jpg">
-					</div>
-					<a href="#"><img class="circle" src="https://akariin.dev/images/avatar.jpg"></a>
-					<a href="#"><span class="white-text name">Akkariin Meiko</span></a>
-					<a href="#"><span class="white-text email">个人开发者，鸽子王</span></a>
-				</div>
-			</li>
-			<li><a class="waves-effect" href="https://tql.ink/" target="_blank">个人博客</a></li>
-			<li><a class="waves-effect" href="https://t.me/Akkariins" target="_blank">Telegram</a></li>
-			<li><div class="divider"></div></li>
-			<li><a class="subheader">社交媒体</a></li>
-			<li><a class="waves-effect" href="https://twitter.com/KasuganoSoras" target="_blank">Twitter</a></li>
-			<li><a class="waves-effect" href="https://facebook.com/KasuganoSoras" target="_blank">Facebook</a></li>
-			<li><a class="waves-effect" href="https://github.com/KasuganoSoras" target="_blank">GitHub</a></li>
-			<li><a class="subheader">关于本项目</a></li>
-			<li><a class="waves-effect" href="https://www.v2ex.com/t/617224" target="_blank">V2EX</a></li>
-			<li><a class="waves-effect" href="https://github.com/kasuganosoras/SyncMusic" target="_blank">GitHub</a></li>
-		</ul>
 		<div class="container">
 			<div class="row">
 				<div class="col s12 m8">
@@ -88,8 +44,8 @@
 						</div>
 						<p style="text-align:right;cursor:pointer;">
 							<span onclick="if(volrange.style.display=='none'){$(volrange).fadeIn();}else{$(volrange).fadeOut();}">音量控制</span>&nbsp;&nbsp;&nbsp;
-							<input type="range" value="1" min="0" max="1" step="0.01" id="volrange" 
-								style="display:none;transition-duration: 0.2s;border: 0px;width: 30%;position: relative;top: -4px;" 
+							<input type="range" value="1" min="0" max="1" step="0.01" id="volrange"
+								style="display:none;transition-duration: 0.2s;border: 0px;width: 30%;position: relative;top: -4px;"
 								onmousemove="musicControl.volume=this.value"
 								onchange="localStorage.setItem('volume', this.value)" />
 						</p>
@@ -109,88 +65,19 @@
 					<p>当前一共在线 <online id="online-user">0</online> 人</p>
 					<div id="chatdata"><button onclick="connect()" class="btn btn-primary">连接服务器</button></div>
 					<div class="input-group">
-						<input type="text" id="msginput" class="form-control input white-text" placeholder="消息内容"  style="width: 70%;"></input> 
-				
-						 
+						<input type="text" id="msginput" class="form-control input white-text" placeholder="消息内容"  style="width: 70%;"></input>
+
+
 						<span class="input-group-btn" >
 							<button onclick="sendmsg()" id="sendmsgbtn" class="btn btn-primary" style="width: 25%;" >发送</button>
-						</span>		
-					 
+						</span>
+
 						 <button onclick="checkInput()" id="opensearch" class="btn btn-primary">搜索音乐</button>
-						 
-						 <button onclick="openedEmoji=true;$(faces).fadeIn();" id="openfaces" class="btn btn-primary">表情</button>
-						 
 						 <button onclick="msginput.value='投票切歌';sendmsg();"   class="btn btn-primary">投票切歌</button>
 						 <button onclick="msginput.value='小点声';sendmsg();" class="btn btn-primary">小声</button>
 						 <button onclick="msginput.value='大点声';sendmsg();"  class="btn btn-primary">大声</button>
-						 
-					</div>
-					 <p style = "font-size:10px">---------------------听不懂的---------------------</p>
-					<div class="singer"> 
-					<a onclick="searchsinger('Ariana Grande');"  id="searchsinger">A妹</a>
-					<a onclick="searchsinger('Adele');"  id="searchsinger">阿呆</a>
-					
-					<a onclick="searchsinger('Justin Bieber');"  id="searchsinger">JB</a>
-					<a onclick="searchsinger('lady gaga');"  id="searchsinger">gaga</a>
-					<a onclick="searchsinger('Billie Eilish');"  id="searchsinger">碧莉</a>
-					<a onclick="searchsinger('Sia');"  id="searchsinger">洗牙</a> 
-					<a onclick="searchsinger('P!nk');" id="searchsinger">粉妈</a> 
-					<a onclick="searchsinger('Queen');" id="searchsinger">Queen</a> 
-					<a onclick="searchsinger('taylor swift');" id="searchsinger">霉霉</a>
-					<a onclick="searchsinger('Katy Perry');" id="searchsinger">水果姐</a>   
-					<a onclick="searchsinger('Cardi B');" id="searchsinger">卡老师</a>     <br>
-					<a onclick="searchsinger('Nicki Minaj');" id="searchsinger">麻辣鸡</a>
-					<a onclick="searchsinger('Rihanna');" id="searchsinger">日日</a>
-					<a onclick="searchsinger('Drake');" id="searchsinger">公鸭</a>
-					  
-					<a onclick="searchsinger('Bruno Mars');" id="searchsinger">火星哥</a>
-					<a onclick="searchsinger('Maroon 5');" id="searchsinger">Maroon 5</a>  
-					<a onclick="searchsinger('Imagine Dragons');" id="searchsinger">梦龙</a>  
-					<a onclick="searchsinger('eminem');" id="searchsinger">姆爷</a>
-					<a onclick="searchsinger('Ed Sheeran');"  id="searchsinger">黄老板</a>   
-					<a onclick="searchsinger('Charlie Puth');" id="searchsinger">断眉</a>   <br>
-				</div>
-				
-				<p style = "font-size:10px">---------------------听得懂的---------------------</p>
-				<div class="singer"> 
-					<a onclick="searchsinger('周杰伦');" id="searchsinger">周董</a>  
-					<a onclick="searchsinger('陈奕迅');" id="searchsinger">陈奕迅</a>
-					<a onclick="searchsinger('朴树');" id="searchsinger">朴师傅</a>   
-					<a onclick="searchsinger('五月天');" id="searchsinger">五月天</a>   
-					<a onclick="searchsinger('王力宏');" id="searchsinger">王力宏</a>	
-					<a onclick="searchsinger('张学友');" id="searchsinger">张学友</a>
-					<a onclick="searchsinger('孙燕姿');" id="searchsinger">孙燕姿</a> 
-					<a onclick="searchsinger('梁静茹');" id="searchsinger">梁静茹</a>  <br>
-					
-					<a onclick="searchsinger('邓丽君');" id="searchsinger">邓丽君</a> 
-					<a onclick="searchsinger('谭咏麟');" id="searchsinger">谭咏麟</a> 
-					
-					<a onclick="searchsinger('林俊杰');" id="searchsinger">林俊杰</a> 
-					<a onclick="searchsinger('李健');" id="searchsinger">李健</a> 
-					<a onclick="searchsinger('羽泉');" id="searchsinger">羽泉</a> 
-					<a onclick="searchsinger('韩红');" id="searchsinger">韩胖胖</a> 
-					<a onclick="searchsinger('邓紫棋');" id="searchsinger">邓紫棋</a>
 
-					<a onclick="searchsinger('李荣浩');" id="searchsinger">李荣浩</a>     <br>
-					
-					<a onclick="searchsinger('蔡依林');" id="searchsinger">蔡依林</a>
-					<a onclick="searchsinger('S.H.E');" id="searchsinger">S.H.E</a>
-						
-					
-					<a onclick="searchsinger('罗大佑');" id="searchsinger">罗大佑</a>
-					<a onclick="searchsinger('李宗盛');" id="searchsinger">李宗盛</a>
-					<a onclick="searchsinger('周华健');" id="searchsinger">周华健</a>
-					<a onclick="searchsinger('张震岳');" id="searchsinger">张震岳</a>
-					<a onclick="searchsinger('齐秦');" id="searchsinger">齐秦</a>
-					<a onclick="searchsinger('伍佰');" id="searchsinger">伍佰</a>
-					
-				 
-					<a onclick="searchsinger('张杰');" id="searchsinger">张杰</a>  <br>
-					<a onclick="searchsinger('苏打绿');" id="searchsinger">苏打绿</a>
-					
-				
 					</div>
-				 <p>↑↑↑↑↑↑↑↑直接点上面的歌手，即可点歌↑↑↑↑↑↑↑↑<br></p>
 					<p>点歌方式一：输入 [点歌 歌名] 即可点歌。<br>例如：点歌 See You Again<br></p>
 					<p>点歌方式二：输入歌名，点上方 [搜索音乐]按钮，然后选择你要的音乐。</p>
 					<p>遇到不好听的歌可以点击 [投票切歌]，超过在线人数30%就会切歌。</p>
@@ -200,11 +87,11 @@
 					 <p class="actionInput">
 						<a onclick="msginput.value='切歌';sendmsg();">[ 切歌 ]</a>&nbsp;&nbsp;
 						<a onclick="msginput.value='置顶 '; ">[ 置顶 ] </a>&nbsp;&nbsp;
-					 
+
 					</p>
 					[置顶 3]代表置顶id为3的歌</p> [禁言 ip]（把指定的人禁言）</p>[解禁]，[禁言列表]，[加黑名单] (把当前歌曲加入黑名单)。</p>
 					<iframe src="/search.php" style="display: none;border: 0px;width: 100%;height: 700px;width: 800px;position: fixed;top: 10%;left: 15%;background: #F1F1F1;border: 12px solid rgba(255,255,255,0.0);border-radius: 8px;box-shadow: 0px 0px 16px rgba(0,0,0,0.8);" id="search"></iframe>
-					<iframe src="/face.html?s=3" style="display: none;border: 0px;width: 70vw;height: 70vh;position: fixed;top: 15vh;left: 15vw;background: #F1F1F1;border: 12px solid rgba(255,255,255,0.0);border-radius: 8px;box-shadow: 0px 0px 16px rgba(0,0,0,0.8);" id="faces"></iframe>
+<!--					<iframe src="/face.html?s=3" style="display: none;border: 0px;width: 70vw;height: 70vh;position: fixed;top: 15vh;left: 15vw;background: #F1F1F1;border: 12px solid rgba(255,255,255,0.0);border-radius: 8px;box-shadow: 0px 0px 16px rgba(0,0,0,0.8);" id="faces"></iframe>-->
 				</div>
 			</div>
 		</div>
@@ -213,8 +100,8 @@
 	<script type="text/javascript" src="./js/materialize.min.js"></script>
 	<script type="text/javascript">
 		// 配置
-		var ws_hostname = 'ws://'+self.location.hostname+':811/';
-		
+		var ws_hostname = 'ws://'+self.location.hostname+':9501/';
+
 		// 初始化变量
 		var websocket;
 		var lrcObj = {};
@@ -227,7 +114,7 @@
 		var lastVol = 0;
 		var last_input = "";
 		var inputGroupCss = "position: fixed;width:100%;bottom: 0px;left: 0px;padding-bottom:12px;padding-left: 12px;padding-right:12px;background:rgba(39,50,56,0.85);box-shadow: 0px 0px 8px rgba(0,0,0,0.5);";
-		
+
 		// 搜索功能
 		function checkInput() {
 			var userInput = $("#msginput").val();
@@ -235,7 +122,7 @@
 			userInput = userInput.replace(/点歌 /g, "");
 			if(userInput != "") {
 				if(userInput != lastkeyword)
-				{ 
+				{
 				search.src = "search.php?s=" + encodeURIComponent(userInput);
 				}
 				setTimeout("$(search).fadeIn();", 500);
@@ -243,20 +130,20 @@
 				//这里仅适用于migu的ID
 				if((userInput.indexOf("6") != 0) || (userInput.length != 11))
 				{
-					localStorage.setItem('keyword', userInput); 
+					localStorage.setItem('keyword', userInput);
 				}
 			}
 		}
 				// 搜索功能
 		function searchsinger(msg) {
 			var userInput = msg;
-			  
+
 			if(userInput != "") {
-			
+
 				search.src = "search.php?s=" + encodeURIComponent(userInput);
 
 				setTimeout("$(search).fadeIn();", 1000);
-		 
+
 				openedEmoji = true;
 			}
 		}
@@ -271,22 +158,22 @@
 				paused = true;
 			}
 		}
-		
+
 		// 关闭窗口
 		function checkElement(event) {
-			if(openedEmoji && event.target != faces && event.target != openfaces && event.target != search && event.target != opensearch  && event.target.id != "searchsinger" ) {
-				$(faces).fadeOut();
-				$(search).fadeOut();
-				openedEmoji = false;
-			}
+			// if(openedEmoji && event.target != faces && event.target != openfaces && event.target != search && event.target != opensearch  && event.target.id != "searchsinger" ) {
+			// 	$(faces).fadeOut();
+			// 	$(search).fadeOut();
+			// 	openedEmoji = false;
+			// }
 		}
-		
+
 		// 系统消息
 		function print(msg) {
 			$("#chatdata").append("<center><span class='sysmsg'>" + msg + "</span></center>");
 			chatdata.scrollTop = chatdata.scrollHeight;
 		}
-		
+
 		// 解析 Lrc 格式歌词
 		function parseLyric(text) {
 			var lyrics = text.split("\n");
@@ -307,32 +194,32 @@
 			}
 			return lrcObj;
 		}
-		
+
 		// 聊天内容
 		function chat(data) {
-			if (data.data == "大点声") 
-			{			
+			if (data.data == "大点声")
+			{
 				musicControl.volume += 0.1;
 				localStorage.setItem('volume', musicControl.volume);
 				window.localStorage.setItem('volume', musicControl.volume);
 				print('有人调高了一丢丢音量');
 				return ;
 			}
-			if (data.data == "小点声") 
-			{			
+			if (data.data == "小点声")
+			{
 				musicControl.volume -= 0.1;
 				localStorage.setItem('volume', musicControl.volume);
 				window.localStorage.setItem('volume', musicControl.volume);
 				print('有人调低了一丢丢音量');
 				return ;
 			}
-			if (data.data == "刷新页面") 
-			{			
+			if (data.data == "刷新页面")
+			{
 				window.location.reload();
 				return ;
 			}
-			if (data.data == "同步") 
-			{			
+			if (data.data == "同步")
+			{
 				setTimeout(function() { musicControl.currentTime = 1; }, 1000);
 				return ;
 			}
@@ -343,14 +230,14 @@
 			$(".chat-" + randid).fadeIn();
 			chatdata.scrollTop = chatdata.scrollHeight;
 		}
-		
+
 		// 读取音乐
 		function music(data) {
 			let music_title = data.artists + " - " + data.name;
 			let setVolume = localStorage.getItem("volume");
 			musicControl.volume = (setVolume == null || setVolume == undefined) ? 1 : setVolume;
 			// 原本 pull request 这里加了个通知后面考虑还是去掉了，因为会多次显示刷屏
-			document.title = music_title + " - SyncMusic - 在线点歌";
+			document.title = music_title + " - 在线点歌台";
 			musicControl.src = data.file;
 			musicControl.pause();
 			musicname.innerHTML = music_title + ", 专辑 《" + data.album + "》";
@@ -366,7 +253,7 @@
 				musicControl.play();
 			}, 1000);
 		}
-		
+
 		// 转换时间格式
 		function formatSeconds(value) {
 			if(value == null || value == undefined) value = 0;
@@ -389,7 +276,7 @@
 			if(hourTime < 10) hourTime = "0" + parseInt(hourTime);
 			return hourTime + ":" + minuteTime + ":" + secondTime;
 		}
-		
+
 		// 发送聊天消息
 		function sendmsg() {
 			var message = msginput.value;
@@ -421,7 +308,7 @@
 				window.parent.msginput.value = localStorage.getItem("keyword");
 			}
 		}
-		
+
 		// 连接服务器
 		function connect() {
 			websocket = new WebSocket(ws_hostname);
@@ -444,7 +331,7 @@
 				ws_connected = false;
 			};
 		}
-		
+
 		// 处理消息
 		function handle(data) {
 			try {
@@ -477,9 +364,9 @@
 				//print(e.message);
 			}
 		}
-		
+
 		// 网页加载完毕
-		document.onreadystatechange = function() { 
+		document.onreadystatechange = function() {
 			if(document.readyState == "complete") {
 				$('.sidenav').sidenav();
 				$("#msginput").keydown(function(e) {

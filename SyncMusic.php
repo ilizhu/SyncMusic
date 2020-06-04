@@ -1,19 +1,20 @@
 <?php
 /**
- *    __________    ____                   __  __           _      
- *   |  _____   |  / ___| _   _ _ __   ___|  \/  |_   _ ___(_) ___ 
+ *    __________    ____                   __  __           _
+ *   |  _____   |  / ___| _   _ _ __   ___|  \/  |_   _ ___(_) ___
  *   |  |    |  |  \___ \| | | | '_ \ / __| |\/| | | | / __| |/ __|
- *   |  |    |  |   ___) | |_| | | | | (__| |  | | |_| \__ \ | (__ 
+ *   |  |    |  |   ___) | |_| | | | | (__| |  | | |_| \__ \ | (__
  *  /   |   /   |  |____/ \__, |_| |_|\___|_|  |_|\__,_|___/_|\___|
- * |___/   |___/          |___/                                    
+ * |___/   |___/          |___/
  *
  * 此项目使用 GPL v3 协议开放源代码，您可以在遵守本协议的前提下自由修改使用
  *
  * 作者：Akkariin Meiko | QQ：204034 | Telegram：Akkariins
  *
  **/
+require_once 'getid3/getid3.php';
 class SyncMusic {
-	
+
 	private $server;
 	private $bindHost;
 	private $bindPort;
@@ -23,7 +24,7 @@ class SyncMusic {
 	private $getIpMethod;
 	private $musicApi;
 	private $musicSource;
-	
+
 	/**
 	 *
 	 *  Construct 定义服务器基础信息
@@ -40,7 +41,7 @@ class SyncMusic {
 		$this->musicApi    = $musicApi;
 		$this->musicSource    = $musicSource;
 	}
-	
+
 	/**
 	 *
 	 *  checkDataFolder 检查并创建数据目录
@@ -61,7 +62,7 @@ class SyncMusic {
 			@file_put_contents(ROOT . "/random.txt", $data);
 		}
 	}
-	
+
 	/**
 	 *
 	 *  Init 初始化并配置服务器
@@ -70,7 +71,7 @@ class SyncMusic {
 	public function init()
 	{
 		$this->checkDataFolder();
-		
+
 		$this->server = new Swoole\WebSocket\Server($this->bindHost, $this->bindPort);
 		$this->server->set([
 			'task_worker_num' => $this->workersNum,
@@ -101,47 +102,47 @@ class SyncMusic {
 		$this->server->started = false;
 		$this->server->randomed = false;
 		$this->server->adding = false;
-		
+
 		/**
 		 *
 		 *  Open Event 当客户端与服务器建立连接时触发此事件
 		 *
 		 */
 		$this->server->on('open', function (Swoole\WebSocket\Server $server, $request) {
-			
+
 			// 当第一个客户端连接到服务器的时候就触发 Task 去处理事件
 			if(!$server->started) {
 				$server->task(["action" => "Start"]);
 				$server->started = true;
 			}
-			
+
 			// 获取客户端的 IP 地址
 			if($this->getIpMethod) {
 				$clientIp = $request->header['x-real-ip'] ?? "127.0.0.1";
 			} else {
 				$clientIp = $server->getClientInfo($request->fd)['remote_ip'] ?? "127.0.0.1";
 			}
-			
+
 			// 将客户端 IP 储存到表中
 			$server->chats->set($request->fd, ["ip" => $clientIp]);
-			
+
 			$this->consoleLog("客户端 {$request->fd} [{$clientIp}] 已连接到服务器", 1, true);
-			
+
 			$server->push($request->fd, json_encode([
 				"type" => "msg",
 				"data" => "你已经成功连接到服务器！"
 			]));
-			
+
 			$musicPlay = $this->getMusicPlay();
 			$musicList = $this->getMusicShow();
-			
+
 			// 如果当前列表中有音乐可播放
 			if($musicList && !empty($musicList)) {
-				
+
 				// 获取音乐的信息和歌词
 				$musicInfo = $musicList[0];
 				$lrcs      = $this->getMusicLrcs($musicInfo['id']);
-				
+
 				// 推送给客户端
 				$server->push($request->fd, json_encode([
 					"type"    => "music",
@@ -155,7 +156,7 @@ class SyncMusic {
 					"lrcs"    => $lrcs,
 					"user"    => $musicInfo['user']
 				]));
-				
+
 				// 播放列表更新
 				$playList = $this->getPlayList($musicList);
 				$server->push($request->fd, json_encode([
@@ -171,11 +172,11 @@ class SyncMusic {
 		 *
 		 */
 		$this->server->on('message', function (Swoole\WebSocket\Server $server, $frame) {
-			
+
 			$clients = $server->connections;
 			$clientIp = $this->getClientIp($frame->fd);
 			$adminIp = $this->getAdminIp();
-			
+
 			// 判断客户端是否已被封禁
 			if($this->isBanned($clientIp)) {
 				$server->push($frame->fd, json_encode([
@@ -183,21 +184,21 @@ class SyncMusic {
 					"data" => "你没有权限发言"
 				]));
 			} else {
-				
+
 				// 把客户端 IP 地址的 C 段和 D 段打码作为用户名显示
 				$username = $this->getMarkName($clientIp);
-				
+
 				// 解析客户端发过来的消息
 				$message = $frame->data;
 				$json = json_decode($message, true);
-				
+
 				if($json && isset($json['type'])) {
 					switch($json['type']) {
 						case "msg":
-							
+
 							// 获取客户端最后发言的时间戳
 							$lastChat = $this->getLastChat($frame->fd);
-							
+
 							//防止客户端刷屏
 							if($lastChat && time() - $lastChat <= MIN_CHATWAIT) {
 								$server->push($frame->fd, json_encode([
@@ -205,21 +206,21 @@ class SyncMusic {
 									"data" => "发言太快，请稍后再发送"
 								]));
 							} else {
-								
+
 								// 储存用户的最后发言时间
 								$this->setLastChat($frame->fd, time());
 								$this->consoleLog("客户端 {$frame->fd} 发送消息：{$json['data']}", 1, true);
-								
+
 								if($json['data'] == "切歌") {
-									
+
 									// 如果是切歌的命令，先判断是否是管理员
 									if($this->isAdmin($clientIp)) {
-										
+
 										// 执行切歌操作，这里的 time + 1 是为了防止 bug
 										$this->setMusicTime(time() + 1);
 										$this->setMusicPlay(0);
 										$this->setMusicLong(time());
-										
+
 										$server->push($frame->fd, json_encode([
 											"type" => "msg",
 											"data" => "成功切歌"
@@ -231,11 +232,11 @@ class SyncMusic {
 										]));
 									}
 								} elseif($json['data'] == "投票切歌") {
-									
+
 									// 由所有用户投票切掉当前歌曲
 									$needSwitch = $this->getNeedSwitch();
 									$totalUsers = $this->getTotalUsers();
-									
+
 									// 判断用户是否已经投过票
 									if($this->isAlreadySwtich($clientIp)) {
 										$server->push($frame->fd, json_encode([
@@ -243,10 +244,10 @@ class SyncMusic {
 											"data" => "你已经投票过了"
 										]));
 									} else {
-										
+
 										// 如果是第一次投票
 										if($needSwitch == 1) {
-											
+
 											// 广播给所有客户端
 											foreach($server->connections as $id) {
 												$server->push($id, json_encode([
@@ -255,16 +256,16 @@ class SyncMusic {
 												]));
 											}
 										}
-										
+
 										// 判断投票的用户数是否超过在线用户数的 30%
 										if($needSwitch / $totalUsers >= 0.3) {
-											
+
 											// 执行切歌操作
 											$this->setMusicTime(time() + 1);
 											$this->setMusicPlay(0);
 											$this->setMusicLong(time());
 											$this->setNeedSwitch("");
-											
+
 											$server->push($frame->fd, json_encode([
 												"type" => "msg",
 												"data" => "成功切歌"
@@ -275,7 +276,7 @@ class SyncMusic {
 												"type" => "msg",
 												"data" => "投票成功"
 											]));
-											
+
 											// 广播给所有客户端
 											foreach($server->connections as $id) {
 												$server->push($id, json_encode([
@@ -284,7 +285,7 @@ class SyncMusic {
 												]));
 											}
 										}
-										
+
 										// 广播给所有客户端
 										$userNickName = $this->getUserNickname($clientIp);
 										foreach($clients as $id) {
@@ -301,7 +302,7 @@ class SyncMusic {
 										}
 									}
 								} elseif($json['data'] == "禁言列表") {
-									
+
 									// 查看已禁言的用户列表，先判断是否是管理员
 									if($this->isAdmin($clientIp)) {
 										$server->push($frame->fd, json_encode([
@@ -317,12 +318,12 @@ class SyncMusic {
 										]));
 									}
 								} elseif(mb_substr($json['data'], 0, 3) == "禁言 " && mb_strlen($json['data']) > 3) {
-									
+
 									// 如果是禁言客户端的命令，先判断是否是管理员
 									if($this->isAdmin($clientIp)) {
 										$banName = trim(mb_substr($json['data'], 3, 99999));
 										if(!empty($banName)) {
-											
+
 											// 判断是否已经被禁言
 											if($this->isBanned($banName)) {
 												$server->push($frame->fd, json_encode([
@@ -349,12 +350,12 @@ class SyncMusic {
 										]));
 									}
 								} elseif(mb_substr($json['data'], 0, 3) == "解禁 " && mb_strlen($json['data']) > 3) {
-									
+
 									// 如果是解禁客户端的命令，先判断是否是管理员
 									if($this->isAdmin($clientIp)) {
 										$banName = trim(mb_substr($json['data'], 3, 99999));
 										if(!empty($banName)) {
-											
+
 											// 如果用户没有被封禁
 											if(!$this->isBanned($banName)) {
 												$server->push($frame->fd, json_encode([
@@ -380,15 +381,15 @@ class SyncMusic {
 											"data" => "你没有权限这么做"
 										]));
 									}
-									
+
 								} elseif(mb_substr($json['data'], 0, 3) == "置顶 " && mb_strlen($json['data']) > 3) {
-									
+
 									// 如果是交换歌曲顺序的命令，先判断是否是管理员
 									if($this->isAdmin($clientIp)) {
 										$switchMusic = trim(mb_substr($json['data'], 3, 99999));
 										if(!empty($switchMusic)) {
 											$switchMusic = Intval($switchMusic);
-											
+
 											// 不可以切换正在播放的歌曲
 											if($switchMusic == 0) {
 												$server->push($frame->fd, json_encode([
@@ -396,11 +397,11 @@ class SyncMusic {
 													"data" => "正在播放的音乐不能切换"
 												]));
 											} else {
-												
+
 												// 取得列表
 												$musicList = $this->getMusicList();
 												$sourceList = $this->getMusicShow();
-												
+
 												// 储存并交换两首音乐
 												$waitSwitch = $musicList[$switchMusic - 1];
 												$needSwitch = $musicList[0];
@@ -408,12 +409,12 @@ class SyncMusic {
 												$sourceList[1] = $waitSwitch;
 												$musicList[$switchMusic - 1] = $needSwitch;
 												$sourceList[$switchMusic] = $needSwitch;
-												
+
 												// 播放列表更新
 												$playList = $this->getPlayList($sourceList);
 												$this->setMusicList($musicList);
 												$this->setMusicShow($sourceList);
-												
+
 												// 广播给所有客户端
 												foreach($server->connections as $id) {
 													$server->push($id, json_encode([
@@ -421,7 +422,7 @@ class SyncMusic {
 														"data" => $playList
 													]));
 												}
-												
+
 												// 发送通知
 												$server->push($frame->fd, json_encode([
 													"type" => "msg",
@@ -441,14 +442,14 @@ class SyncMusic {
 										]));
 									}
 								} elseif(mb_substr($json['data'], 0, 5) == "删除音乐 " && mb_strlen($json['data']) > 5) {
-									
+
 									// 如果是删除某首音乐的命令
 									$deleteMusic = trim(mb_substr($json['data'], 5, 99999));
 									$deleteMusic = Intval($deleteMusic);
-									
+
 									// 判断操作者是否是管理员
 									if($this->isAdmin($clientIp)) {
-										
+
 										// 如果正在播放的音乐是第一首
 										if($deleteMusic <= 0) {
 											$server->push($frame->fd, json_encode([
@@ -456,24 +457,24 @@ class SyncMusic {
 												"data" => "正在播放的音乐不能删除"
 											]));
 										} else {
-											
+
 											// 获取播放列表
 											$musicList  = $this->getMusicList();
 											$sourceList = $this->getMusicShow();
-											
+
 											// 从列表中删除这首歌
 											unset($musicList[$deleteMusic - 1]);
 											unset($sourceList[$deleteMusic]);
-											
+
 											// 重新整理列表
 											$musicList = array_values($musicList);
 											$sourceList = array_values($sourceList);
-											
+
 											// 播放列表更新
 											$playList = $this->getPlayList($sourceList);
 											$this->setMusicList($musicList);
 											$this->setMusicShow($sourceList);
-											
+
 											// 广播给所有客户端
 											foreach($server->connections as $id) {
 												$server->push($id, json_encode([
@@ -481,7 +482,7 @@ class SyncMusic {
 													"data" => $playList
 												]));
 											}
-											
+
 											// 发送通知
 											$server->push($frame->fd, json_encode([
 												"type" => "msg",
@@ -489,7 +490,7 @@ class SyncMusic {
 											]));
 										}
 									} else {
-										
+
 										// 如果正在播放的音乐是第一首
 										if($deleteMusic <= 0) {
 											$server->push($frame->fd, json_encode([
@@ -497,26 +498,26 @@ class SyncMusic {
 												"data" => "正在播放的音乐不能删除"
 											]));
 										} else {
-											
+
 											// 获取播放列表
 											$musicList  = $this->getMusicList();
 											$sourceList = $this->getMusicShow();
-											
+
 											if(isset($musicList[$deleteMusic - 1]) && $musicList[$deleteMusic - 1]['user'] == $clientIp) {
-											
+
 												// 从列表中删除这首歌
 												unset($musicList[$deleteMusic - 1]);
 												unset($sourceList[$deleteMusic]);
-												
+
 												// 重新整理列表
 												$musicList = array_values($musicList);
 												$sourceList = array_values($sourceList);
-												
+
 												// 播放列表更新
 												$playList = $this->getPlayList($sourceList);
 												$this->setMusicList($musicList);
 												$this->setMusicShow($sourceList);
-												
+
 												// 广播给所有客户端
 												foreach($server->connections as $id) {
 													$server->push($id, json_encode([
@@ -524,7 +525,7 @@ class SyncMusic {
 														"data" => $playList
 													]));
 												}
-												
+
 												// 发送通知
 												$server->push($frame->fd, json_encode([
 													"type" => "msg",
@@ -538,12 +539,12 @@ class SyncMusic {
 											}
 										}
 									}
-									
+
 								} elseif(mb_substr($json['data'], 0, 5) == "房管登录 " && mb_strlen($json['data']) > 5) {
-									
+
 									// 如果是房管登录操作
 									$userPass = trim(mb_substr($json['data'], 5, 99999));
-									
+
 									// 判断密码是否正确
 									if($userPass == $this->adminPass) {
 										$this->setAdminIp($clientIp);
@@ -557,12 +558,12 @@ class SyncMusic {
 											"data" => "房管密码错误"
 										]));
 									}
-									
+
 								} elseif(mb_substr($json['data'], 0, 5) == "加黑名单 " && mb_strlen($json['data']) > 5) {
-									
+
 									// 如果是房管登录操作
 									$blackList = trim(mb_substr($json['data'], 5, 99999));
-									
+
 									// 判断密码是否正确
 									if($this->isAdmin($clientIp)) {
 										$this->addBlackList($blackList);
@@ -576,12 +577,12 @@ class SyncMusic {
 											"data" => "你没有权限这么做"
 										]));
 									}
-									
+
 								} elseif(mb_substr($json['data'], 0, 5) == "设置昵称 " && mb_strlen($json['data']) > 5) {
-									
+
 									// 如果是设置昵称
 									$userNick = trim(mb_substr($json['data'], 5, 99999));
-									
+
 									// 正则判断用户名是否合法
 									if(preg_match("/^[\x{4e00}-\x{9fa5}A-Za-z0-9_]+[^_]{3,20}$/u", $userNick)) {
 										if($this->isBlackList($userNick)) {
@@ -611,13 +612,13 @@ class SyncMusic {
 											"data" => "只允许中英文数字下划线，最少 4 个字"
 										]));
 									}
-									
+
 								} elseif(mb_substr($json['data'], 0, 3) == "点歌 " && mb_strlen($json['data']) > 3) {
-									
+
 									// 如果是点歌命令
 									$musicName = trim(mb_substr($json['data'], 3, 99999));
 									if(!empty($musicName)) {
-										
+
 										// 判断是否已经有人在点歌中
 										if(count($this->getUserMusic($clientIp)) > MAX_USERMUSIC) {
 											$server->push($frame->fd, json_encode([
@@ -636,10 +637,10 @@ class SyncMusic {
 													"data" => "消息过长，最多 " . MAX_CHATLENGTH . " 字符"
 												]));
 											} else {
-												
+
 												// 提交任务给服务器
 												$server->task(["id" => $frame->fd, "action" => "Search", "data" => $musicName]);
-												
+
 												// 广播给所有客户端
 												$userNickName = $this->getUserNickname($clientIp);
 												foreach($clients as $id) {
@@ -663,7 +664,7 @@ class SyncMusic {
 										]));
 									}
 								} else {
-									
+
 									// 默认消息内容，即普通聊天，广播给所有客户端
 									if(mb_strlen($json['data']) > MAX_CHATLENGTH) {
 										$server->push($frame->fd, json_encode([
@@ -705,7 +706,7 @@ class SyncMusic {
 				}
 			}
 		});
-		
+
 		/**
 		 *
 		 *  Close Event 当客户端断开与服务器的连接时触发此事件
@@ -714,49 +715,49 @@ class SyncMusic {
 		$this->server->on('close', function ($server, $fd) {
 			$this->consoleLog("客户端 {$fd} 已断开连接", 1, true);
 		});
-		
+
 		/**
 		 *
 		 *  Task Event 当服务器运行任务时触发此事件
 		 *
 		 */
 		$this->server->on('Task', function (Swoole\Server $server, $task_id, $from_id, $data) {
-			
+
 			// 如果是服务器初始化任务
 			if($data['action'] == "Start") {
-				
+
 				// 设定死循环的目的是为了建立一个单独的线程用于执行数据更新
 				while(true) {
-					
+
 					$musicList = $this->getMusicList();
 					$musicShow = $this->getMusicShow();
-					
+
 					// 如果列表为空
 					if(empty($musicList) || empty($musicShow)) {
 						$musicList = empty($musicList) ? $this->getSavedMusicList() : $musicList;
 						$musicShow = empty($musicShow) ? $this->getSavedMusicShow() : $musicShow;
 					}
-					
+
 					// 如果音乐列表不为空
 					if(!empty($musicList)) {
-						
+
 						$musicTime = $this->getMusicTime();
-						
+
 						// 如果音乐的结束时间小于当前时间，即播放完毕
 						if($musicTime < time() + 3) {
-							
+
 							$server->randomed = false;
-							
+
 							// 获得下一首歌的信息
 							$musicInfo  = $musicList[0];
 							$sourceList = $musicList;
-							
+
 							// 从播放列表里移除第一首，因为已经开始播放了
 							unset($musicList[0]);
 							$musicList = array_values($musicList);
-							
+
 							$this->consoleLog("正在播放音乐：{$musicInfo['name']}", 1, true);
-							
+
 							// 储存信息
 							$this->setMusicList($musicList);
 							$this->setMusicShow($sourceList);
@@ -764,11 +765,11 @@ class SyncMusic {
 							$this->setMusicLong(time());
 							$this->setMusicPlay(0);
 							$this->setNeedSwitch("");
-							
+
 							// 获得播放列表
 							$playList = $this->getPlayList($sourceList);
 							$musicLrc = $this->getMusicLrcs($musicInfo['id']);
-							
+
 							// 广播给所有客户端
 							if($server->connections) {
 								$currentURL = $this->getMusicUrl($musicInfo['id']);
@@ -792,20 +793,20 @@ class SyncMusic {
 							}
 						}
 					} else {
-						
+
 						// 如果列表已经空了，先获取当前音乐是否还在播放
 						$musicTime = $this->getMusicTime();
-						
+
 						// 判断音乐的结束时间是否小于当前时间，如果是则表示已经播放完了
 						if($musicTime && $musicTime < time() + 3) {
-							
+
 							// 获取随机的音乐 ID
 							$rlist = $this->getRandomList();
 							if($rlist && !$server->randomed) {
-								
+
 								// 判断是否还有人在线，如果没人就不播放了，有人才播放
 								if($server->connections && count($server->connections) > 0) {
-									
+
 									// 开始播放随机音乐
 									$this->searchMusic($server, ["id" => false, "action" => "Search", "data" => $rlist]);
 									$server->randomed = true;
@@ -813,27 +814,27 @@ class SyncMusic {
 							}
 						}
 					}
-					
+
 					// 记录音乐已经播放的时间
 					$musicLong = $this->getMusicLong();
 					if($musicLong && is_numeric($musicLong)) {
 						$this->setMusicPlay(time() - $musicLong);
 					}
-					
+
 					// 将播放列表储存到硬盘
 					$this->setSavedMusicList($musicList);
 					$this->setSavedMusicShow($musicShow);
-					
+
 					// 每秒钟执行一次任务
 					sleep(1);
 				}
-				
+
 			} elseif($data['action'] == "Search") {
 				// 如果是搜索音乐的任务
 				$this->searchMusic($server, $data);
 			}
 		});
-		
+
 		/**
 		 *
 		 *  Finish Event 当服务器任务完成时触发此事件
@@ -848,7 +849,7 @@ class SyncMusic {
 			}
 		});
 	}
-	
+
 	/**
 	 *
 	 *  Run 启动服务器
@@ -858,7 +859,7 @@ class SyncMusic {
 	{
 		$this->server->start();
 	}
-	
+
 	/**
 	 *
 	 *  SearchMusic 搜索音乐
@@ -867,14 +868,14 @@ class SyncMusic {
 	private function searchMusic(Swoole\Server $server, $data)
 	{
 		$this->consoleLog("正在点歌：{$data['data']}", 1, true);
-		
+
 		$musicList  = $this->getMusicList();
 		$sourceList = $this->getMusicShow();
 		$this->lockSearch();
-		
+
 		// 开始搜索音乐
 		$json = $this->fetchMusicApi($data['data']);
-		
+
 		if($json && !empty($json)) {
 			if(isset($json[0]['id'])) {
 				$m = $json[0];
@@ -962,7 +963,7 @@ class SyncMusic {
 			$this->server->finish(["id" => $data['id'], "action" => "msg", "data" => "未搜索到此歌曲"]);
 		}
 	}
-	
+
 	/**
 	 *
 	 *  BanIp 封禁指定 IP 地址
@@ -973,7 +974,7 @@ class SyncMusic {
 		$bannedIp = $this->getBannedIp() . "{$ip};";
 		$this->server->table->set(0, ["banned_ips" => $bannedIp]);
 	}
-	
+
 	/**
 	 *
 	 *  UnbanIp 解封指定 IP 地址
@@ -984,7 +985,7 @@ class SyncMusic {
 		$bannedIp = str_replace("{$ip};", "", $this->getBannedIp());
 		$this->setBannedIp($bannedIp);
 	}
-	
+
 	/**
 	 *
 	 *  LockSearch 禁止点歌
@@ -994,7 +995,7 @@ class SyncMusic {
 	{
 		$this->server->table->set(0, ["downloaded" => 1]);
 	}
-	
+
 	/**
 	 *
 	 *  UnlockSearch 允许点歌
@@ -1004,7 +1005,7 @@ class SyncMusic {
 	{
 		$this->server->table->set(0, ["downloaded" => 0]);
 	}
-	
+
 	/**
 	 *
 	 *  AddNewSwitch 增加新的投票成员
@@ -1015,7 +1016,7 @@ class SyncMusic {
 		$switchList = $this->server->table->get(0, "needswitch") . "{$ip};";
 		$this->server->table->set(0, ["needswitch" => $switchList]);
 	}
-	
+
 	/**
 	 *
 	 *  AddBlackList 增加新的黑名单关键字
@@ -1027,7 +1028,7 @@ class SyncMusic {
 		$blackList[] = trim($data);
 		$this->setBlackList($blackList);
 	}
-	
+
 	/**
 	 *
 	 *  IsAdmin 判断是否是管理员
@@ -1038,7 +1039,7 @@ class SyncMusic {
 		$adminIp = $this->getAdminIp();
 		return ($adminIp !== "" && $adminIp !== "127.0.0.1" && $adminIp == $ip);
 	}
-	
+
 	/**
 	 *
 	 *  IsBanned 判断是否已被封禁
@@ -1049,7 +1050,7 @@ class SyncMusic {
 		$bannedIp = $this->getBannedIp();
 		return ($bannedIp && stristr($bannedIp, "{$ip};"));
 	}
-	
+
 	/**
 	 *
 	 *  IsBlackList 判断是否在黑名单音乐中
@@ -1065,7 +1066,7 @@ class SyncMusic {
 		}
 		return false;
 	}
-	
+
 	/**
 	 *
 	 *  IsLockedSearch 判断是否禁止点歌
@@ -1075,7 +1076,7 @@ class SyncMusic {
 	{
 		return Intval($this->server->table->get(0, "downloaded")) == 1;
 	}
-	
+
 	/**
 	 *
 	 *  IsAlreadySwitch 判断是否已经投票过了
@@ -1086,7 +1087,7 @@ class SyncMusic {
 		$switchList = $this->server->table->get(0, "needswitch");
 		return stristr($switchList, "{$ip};") ? true : false;
 	}
-	
+
 	/**
 	 *
 	 *  IsInArray 判断指定元素是否在数组中
@@ -1103,7 +1104,7 @@ class SyncMusic {
 		}
 		return $found;
 	}
-	
+
 	/**
 	 *
 	 *  GetBlackList 获取音乐的黑名单列表
@@ -1122,7 +1123,7 @@ class SyncMusic {
 		}
 		return $result;
 	}
-	
+
 	/**
 	 *
 	 *  GetClientIp 获取客户端 IP 地址
@@ -1132,7 +1133,7 @@ class SyncMusic {
 	{
 		return $this->server->chats->get($id, "ip") ?? "127.0.0.1";
 	}
-	
+
 	/**
 	 *
 	 *  GetLastChat 获取客户端最后一次发言时间
@@ -1142,7 +1143,7 @@ class SyncMusic {
 	{
 		return $this->server->chats->get($id, "last") ?? 0;
 	}
-	
+
 	/**
 	 *
 	 *  GetMaskName 获取和谐过的客户端 IP 地址
@@ -1159,7 +1160,7 @@ class SyncMusic {
 		}
 		return $username;
 	}
-	
+
 	/**
 	 *
 	 *  GetRandomList 获取随机的音乐 ID
@@ -1176,7 +1177,7 @@ class SyncMusic {
 		}
 		return $rand;
 	}
-	
+
 	/**
 	 *
 	 *  GetMusicUrl 获取音乐的下载地址
@@ -1194,7 +1195,7 @@ class SyncMusic {
 			return "";
 		}
 	}
-	
+
 	/**
 	 *
 	 *  GetMusicLrcs 获取音乐的歌词
@@ -1243,7 +1244,7 @@ class SyncMusic {
             $lrcdata = json_decode($rawdata, true);
             echo $this->debug ? $this->consoleLog("Http Request << {$rawdata}", 0) : "";
             //unicode解码
-            $json =  $lrcdata['lyric'] ; 
+            $json =  $lrcdata['lyric'] ;
             if(empty($json)) return "[00:01.00]暂无歌词";
             @file_put_contents(ROOT . "/tmp/{$id}.lrc", $json);
             return $json;
@@ -1269,7 +1270,7 @@ class SyncMusic {
 		echo $this->debug ? $this->consoleLog("Http Request << {$rawdata}", 0) : "";
 		return $imgdata['url'] ?? "";
 	}
-	
+
 	/**
 	 *
 	 *  GetPlayList 获取格式化过的播放列表
@@ -1305,7 +1306,7 @@ EOF;
 		}
 		return $playList;
 	}
-	
+
 	/**
 	 *
 	 *  GetUserMusic 获取用户点播的音乐数量
@@ -1322,7 +1323,7 @@ EOF;
 		}
 		return $userMusic;
 	}
-	
+
 	/**
 	 *
 	 *  GetMusicList 获取等待播放的音乐列表
@@ -1346,7 +1347,7 @@ EOF;
 		}
 		return $musicList;
 	}
-	
+
 	/**
 	 *
 	 *  GetMusicShow 获取用于显示在网页上的音乐列表
@@ -1370,7 +1371,7 @@ EOF;
 		}
 		return $sourceList;
 	}
-	
+
 	/**
 	 *
 	 *  GetSavedMusicList 获取已经保存在硬盘的音乐列表
@@ -1381,7 +1382,7 @@ EOF;
 		$data = @file_get_contents(ROOT . "/musiclist.json");
 		return empty($data) ? [] : json_decode($data, true);
 	}
-	
+
 	/**
 	 *
 	 *  GetSavedMusicShow 获取已经保存在硬盘的音乐显示列表
@@ -1392,7 +1393,7 @@ EOF;
 		$data = @file_get_contents(ROOT . "/musicshow.json");
 		return empty($data) ? [] : json_decode($data, true);
 	}
-	
+
 	/**
 	 *
 	 *  GetMusicTime 获取当前正在播放的音乐的结束时间
@@ -1402,7 +1403,7 @@ EOF;
 	{
 		return $this->server->table->get(0, "music_time") ?? 0;
 	}
-	
+
 	/**
 	 *
 	 *  GetMusicLong 获取音乐开始播放的时间
@@ -1412,7 +1413,7 @@ EOF;
 	{
 		return $this->server->table->get(0, "music_long") ?? time();
 	}
-	
+
 	/**
 	 *
 	 *  GetMusicPlay 获取音乐已经播放的时间
@@ -1422,7 +1423,7 @@ EOF;
 	{
 		return $this->server->table->get(0, "music_play") ?? 0;
 	}
-	
+
 	/**
 	 *
 	 *  GetAdminIp 获取管理员的 IP
@@ -1433,7 +1434,7 @@ EOF;
 		$adminIp = @file_get_contents(ROOT . "/admin.ip");
 		return $adminIp ?? "127.0.0.1";
 	}
-	
+
 	/**
 	 *
 	 *  GetBannedIp 获取已经被封禁的 IP
@@ -1443,7 +1444,7 @@ EOF;
 	{
 		return $this->server->table->get(0, "banned_ips") ?? "";
 	}
-	
+
 	/**
 	 *
 	 *  GetMusicLength 获取音乐的总长度时间
@@ -1451,9 +1452,13 @@ EOF;
 	 */
 	private function getMusicLength($id)
 	{
-		return FloatVal(shell_exec(PYTHON_EXEC . " getlength.py " . ROOT . "/tmp/{$id}.mp3"));
+//	    $timeLength = FloatVal(shell_exec(PYTHON_EXEC . " getlength.py " . ROOT . "/tmp/{$id}.mp3"));
+        $getid3 = new getID3();
+        $fileInfo = $getid3->analyze("tmp/{$id}.mp3");
+        $timeLength = $fileInfo['playtime_seconds'];
+		return $timeLength;
 	}
-	
+
 	/**
 	 *
 	 *  GetArtists 获取音乐的歌手信息
@@ -1472,7 +1477,7 @@ EOF;
 		}
 		return $artists;
 	}
-	
+
 	/**
 	 *
 	 *  GetLoggerLevel 获取输出日志的等级
@@ -1483,7 +1488,7 @@ EOF;
 		$levelGroup = ["DEBUG", "INFO", "WARNING", "ERROR"];
 		return $levelGroup[$level] ?? "INFO";
 	}
-	
+
 	/**
 	 *
 	 *  GetNeedSwitch 获取需要切歌的投票用户列表
@@ -1494,7 +1499,7 @@ EOF;
 		$switchList = $this->server->table->get(0, "needswitch");
 		return is_string($switchList) ? count(explode(";", $switchList)) : 0;
 	}
-	
+
 	/**
 	 *
 	 *  GetTotalUsers 获取当前所有在线的客户端数量
@@ -1504,7 +1509,7 @@ EOF;
 	{
 		return $this->server->connections ? count($this->server->connections) : 0;
 	}
-	
+
 	/**
 	 *
 	 *  GetUserNickname 获取用户的昵称
@@ -1515,7 +1520,7 @@ EOF;
 		$data = $this->getUserNickData();
 		return $data[$ip] ?? false;
 	}
-	
+
 	/**
 	 *
 	 *  GetUserNickData 获取所有用户的昵称数据
@@ -1527,7 +1532,7 @@ EOF;
 		$json = json_decode($data, true);
 		return $json ?? [];
 	}
-	
+
 	/**
 	 *
 	 *  SetUserNickname 设置用户的昵称
@@ -1539,7 +1544,7 @@ EOF;
 		$data[$ip] = $name;
 		$this->setUserNickData($data);
 	}
-	
+
 	/**
 	 *
 	 *  SetUserNickData 将昵称数据写入到硬盘
@@ -1549,7 +1554,7 @@ EOF;
 	{
 		@file_put_contents(ROOT . "/username.json", json_encode($data));
 	}
-	
+
 	/**
 	 *
 	 *  SetBlackList 将黑名单数据写入到硬盘
@@ -1563,7 +1568,7 @@ EOF;
 		}
 		@file_put_contents(ROOT . "/blacklist.txt", $result);
 	}
-	
+
 	/**
 	 *
 	 *  SetLastChat 设置客户端的最后发言时间
@@ -1573,7 +1578,7 @@ EOF;
 	{
 		$this->server->chats->set($id, ["last" => $time]);
 	}
-	
+
 	/**
 	 *
 	 *  SetMusicList 设置等待播放的音乐列表
@@ -1592,7 +1597,7 @@ EOF;
 			$this->server->table->set(0, ["music_list" => json_encode($data)]);
 		}
 	}
-	
+
 	/**
 	 *
 	 *  SetMusicShow 设置用于网页显示的音乐列表
@@ -1611,7 +1616,7 @@ EOF;
 			$this->server->table->set(0, ["music_show" => json_encode($data)]);
 		}
 	}
-	
+
 	/**
 	 *
 	 *  SetMusicTime 设置音乐播放的结束时间
@@ -1621,7 +1626,7 @@ EOF;
 	{
 		$this->server->table->set(0, ["music_time" => $data]);
 	}
-	
+
 	/**
 	 *
 	 *  SetMusicLong 设置音乐播放的开始时间
@@ -1631,7 +1636,7 @@ EOF;
 	{
 		$this->server->table->set(0, ["music_long" => $data]);
 	}
-	
+
 	/**
 	 *
 	 *  SetMusicPlay 设置音乐已经播放的时间
@@ -1641,7 +1646,7 @@ EOF;
 	{
 		$this->server->table->set(0, ["music_play" => $data]);
 	}
-	
+
 	/**
 	 *
 	 *  SetSavedMusicList 将等待播放的音乐列表储存到硬盘
@@ -1651,7 +1656,7 @@ EOF;
 	{
 		@file_put_contents(ROOT . "/musiclist.json", $this->server->table->get(0, "music_list"));
 	}
-	
+
 	/**
 	 *
 	 *  SetSavedMusicShow 将用于显示在网页上的音乐列表储存到硬盘
@@ -1661,7 +1666,7 @@ EOF;
 	{
 		@file_put_contents(ROOT . "/musicshow.json", $this->server->table->get(0, "music_show"));
 	}
-	
+
 	/**
 	 *
 	 *  SetAdminIp 设置管理员的 IP 地址
@@ -1671,7 +1676,7 @@ EOF;
 	{
 		@file_put_contents(ROOT . "/admin.ip", $ip);
 	}
-	
+
 	/**
 	 *
 	 *  SetBannedIp 设置被封禁的 IP 列表
@@ -1681,7 +1686,7 @@ EOF;
 	{
 		$this->server->table->set(0, ["banned_ips" => $ip]);
 	}
-	
+
 	/**
 	 *
 	 *  SetNeedSwitch 设置需要投票切歌的用户列表
@@ -1691,7 +1696,7 @@ EOF;
 	{
 		$this->server->table->set(0, ["needswitch" => $data]);
 	}
-	
+
 	/**
 	 *
 	 *  FetchMusicApi 搜索指定关键字的音乐
@@ -1711,38 +1716,40 @@ EOF;
 		}
 		$keyWord = urlencode($keyWord);
 		echo $this->debug ? $this->consoleLog("Http Request >> {$this->musicApi}/api.php?source={$this->musicSource}&types={$type}&{$name}={$keyWord}&count=1&pages=1", 0) : "";
-		$rawdata = @file_get_contents("{$this->musicApi}/api.php?source={$this->musicSource}&types={$type}&{$name}={$keyWord}&count=1&pages=1");
+		$searchUrl = "{$this->musicApi}/api.php?source={$this->musicSource}&types={$type}&{$name}={$keyWord}&count=1&pages=1";
+		//$rawdata = @file_get_contents($searchUrl);
+		$rawdata = $this->http_request($searchUrl);
 		echo $this->debug ? $this->consoleLog("Http Request << {$rawdata}", 0) : "";
 		return json_decode($rawdata, true);
 	}
-	
+
 	/*shidy 尝试用curl替换*/
-	private function http_request($url,$timeout=30,$header=array()){ 
-        if (!function_exists('curl_init')) { 
-            throw new Exception('server not install curl'); 
-        } 
-        $ch = curl_init(); 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
-        curl_setopt($ch, CURLOPT_HEADER, true); 
-        curl_setopt($ch, CURLOPT_URL, $url); 
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout); 
-        $data = curl_exec($ch); 
-        list($header, $data) = explode("\r\n\r\n", $data); 
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE); 
-        if ($http_code == 301 || $http_code == 302) { 
-            $matches = array(); 
-            preg_match('/Location:(.*?)\n/', $header, $matches); 
-            $url = trim(array_pop($matches)); 
-            curl_setopt($ch, CURLOPT_URL, $url); 
-            curl_setopt($ch, CURLOPT_HEADER, false); 
-            $data = curl_exec($ch); 
-        } 
-        if ($data == false) { 
-            curl_close($ch); 
-        } 
-        @curl_close($ch); 
-        return $data; 
-	} 
+	private function http_request($url,$timeout=30,$header=array()){
+        if (!function_exists('curl_init')) {
+            throw new Exception('server not install curl');
+        }
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        $data = curl_exec($ch);
+        list($header, $data) = explode("\r\n\r\n", $data);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($http_code == 301 || $http_code == 302) {
+            $matches = array();
+            preg_match('/Location:(.*?)\n/', $header, $matches);
+            $url = trim(array_pop($matches));
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            $data = curl_exec($ch);
+        }
+        if ($data == false) {
+            curl_close($ch);
+        }
+        @curl_close($ch);
+        return $data;
+	}
 	/**
 	 *
 	 *  FetchMusic 读取音乐文件内容
@@ -1750,6 +1757,7 @@ EOF;
 	 */
 	private function fetchMusic($m, $download = '')
 	{
+	    return true;
 		/*tmsdy 尝试添加去验证*/
 		$stream_opts = [
 			"ssl" => [
@@ -1770,7 +1778,7 @@ EOF;
 		}
 		return $musicFile;
 	}
-	
+
 	/**
 	 *
 	 *  ConsoleLog 控制台输出日志

@@ -1,12 +1,12 @@
 <?php
 // 你的 API 服务器地址
-define("API_URL", "http://192.168.1.107/api");
+define("API_URL", "https://cdn.zerodream.net/netease");
 $pagerows = 50;
 if(isset($_GET['p']) && !empty($_GET['p']) ) {
 	$page =  intval($_GET['p']);
 } else {
 	$page =  1;
-} 
+}
 if( $page <= 1)
 {
 	$prev = 1;
@@ -42,9 +42,9 @@ function getArtists($data) {
 	return $musicName;
 }
 function getShortName($data) {
-	 
+
     $musicName = (mb_strlen($data) > 32) ? mb_substr($data, 0, 30) . "..." : $data;
- 
+
 	return $musicName;
 }
 
@@ -72,7 +72,7 @@ function getShortName($data) {
 			</tr>
 			<?php
 			foreach($data as $music) {
-				
+
 				echo "<tr class='result' onclick='select(\"{$music['id']}\")'>
 				<td>" . getShortName($music['name']) . "</td>   
 				<td>" . getArtists($music['artist']) . "</td>
@@ -110,9 +110,9 @@ function getShortName($data) {
 			window.parent.msginput.value = "点歌 " + data;
 			window.parent.sendmsg();
 			//window.parent.$(window.parent.search).fadeOut();
-			
+
 			//window.parent.$(window.parent.msginput).focus();
-			
+
 		} catch(e) {
 			// No
 		}

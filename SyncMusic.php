@@ -1756,7 +1756,6 @@ EOF;
 	 */
 	private function fetchMusic($m, $download = '')
 	{
-	    return true;
 		/*tmsdy 尝试添加去验证*/
 		$stream_opts = [
 			"ssl" => [

@@ -56,11 +56,9 @@ define("REDIS_PASS", "");
 
 // 音乐信息获取 API，默认是 ZeroDream 的 API
 // 可自行搭建，参考：https://github.com/mengkunsoft/MKOnlineMusicPlayer
-define("MUSIC_API", "http://127.0.0.1/api");
+define("MUSIC_API", "http://music.ilizhu.com/api");
 
 define("MUSIC_SOURCE", "migu");
-// Python3 可执行文件位置
-define("PYTHON_EXEC", "/usr/bin/python3");
 
 // 客户端聊天冷却时间，单位秒
 define("MIN_CHATWAIT", 3);

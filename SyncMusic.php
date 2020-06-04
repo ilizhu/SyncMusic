@@ -1452,7 +1452,6 @@ EOF;
 	 */
 	private function getMusicLength($id)
 	{
-//	    $timeLength = FloatVal(shell_exec(PYTHON_EXEC . " getlength.py " . ROOT . "/tmp/{$id}.mp3"));
         $getid3 = new getID3();
         $fileInfo = $getid3->analyze("tmp/{$id}.mp3");
         $timeLength = $fileInfo['playtime_seconds'];

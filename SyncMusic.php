@@ -1289,6 +1289,7 @@ class SyncMusic {
 </tr>
 EOF;
 		foreach($sourceList as $mid => $mi) {
+		    $mmid = $mid+1;
 			$userNick = $this->getUserNickname($mi['user']) ?? "匿名用户";
 			$user = "{$userNick} (" . $this->getMarkName($mi['user']) . ")";
 			//tmsdy 隐藏过长的专辑名
@@ -1296,7 +1297,7 @@ EOF;
 			$musicName = (mb_strlen($mi['name']) > 32) ? mb_substr($mi['name'], 0, 30) . "..." : $mi['name'];
 			$playList .= <<<EOF
 <tr>
-	<td>{ $mid+1 }</td>
+	<td>{$mmid}</td>
 	<td>{$musicName}</td>
 	<td>{$mi['artists']}</td>
 	<td>{$albumName}</td>

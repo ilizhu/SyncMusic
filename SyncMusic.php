@@ -1296,7 +1296,7 @@ EOF;
 			$musicName = (mb_strlen($mi['name']) > 32) ? mb_substr($mi['name'], 0, 30) . "..." : $mi['name'];
 			$playList .= <<<EOF
 <tr>
-	<td>{$mid}</td>
+	<td>{ $mid+1 }</td>
 	<td>{$musicName}</td>
 	<td>{$mi['artists']}</td>
 	<td>{$albumName}</td>

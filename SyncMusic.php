@@ -584,7 +584,7 @@ class SyncMusic {
 									$userNick = trim(mb_substr($json['data'], 5, 99999));
 
 									// 正则判断用户名是否合法
-									if(preg_match("/^[\x{4e00}-\x{9fa5}A-Za-z0-9_]+[^_]{3,20}$/u", $userNick)) {
+									if(preg_match("/^[\x{4e00}-\x{9fa5}A-Za-z0-9_]+[^_]{2,20}$/u", $userNick)) {
 										if($this->isBlackList($userNick)) {
 											$server->push($frame->fd, json_encode([
 												"type" => "msg",
@@ -609,7 +609,7 @@ class SyncMusic {
 									} else {
 										$server->push($frame->fd, json_encode([
 											"type" => "msg",
-											"data" => "只允许中英文数字下划线，最少 4 个字"
+											"data" => "只允许中英文数字下划线，最少 2 个字"
 										]));
 									}
 

@@ -1,0 +1,472 @@
+<html>
+	<head>
+		<meta name="theme-color" content="#009688" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=11">
+		<title>❤点歌台❤</title>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="./css/materialize.min.css">
+		<link rel="stylesheet" href="./css/font-awesome.min.css">
+		<style type="text/css">body{font-size:15px;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;font-weight:400;}hr{border:2px solid rgba(0,0,0,0.1);}.background-black{background:rgba(0,0,0,0.3);width:100%;height:100%;position:absolute;}.topbar-fixed{z-index:1;position:fixed;top:0px;left:0px;}.container{margin-top:80px;}.logo-text{font-size:22px ! important;font-weight:300;position: relative;top: -2px;}.description{font-size:18px;}.table tr td,.table tr th{padding-left:16px;padding-right:16px;font-weight:400;font-size:15px;}h1,h2,h3,h4,h5{font-weight:400;}.normal-text{font-size:15px;}.input{width:100%;}#chatdata{margin-top:16px;margin-bottom:16px;height:50vh;overflow-y:auto;}#chatdata .sysmsg{padding:4px 12px 4px 12px;border-radius:12px;margin:4px 0px 4px 0px;display:inline-block;background:rgba(0,0,0,0.5);color:#FFF;}#chatdata .chat{width:100%;margin-top:12px;}#chatdata .chat .headimg{display:inline-block;width:65px;text-align:center;vertical-align:top;}#chatdata .chat .headimg img{width:45px;transition-duration:0.25s;}#chatdata .chat .headimg img:hover{box-shadow:0px 0px 8px rgba(0,0,0,0.5);}#chatdata .chat .msgbox{display:inline-block;padding-left:6px;min-width:45px;max-width:calc(100% - 10px);}#chatdata .chat .msgbox small{display:block;}#chatdata .chat .msgbox .msg img{max-width:100%;max-height:100%;}#chatdata .chat .msgbox .msg{margin-top:4px;padding:12px;background:rgba(0,0,0,0.6);border-radius:8px;word-break:break-all;display:inline-block;min-width:45px;}#chatdata .chat .hiddentime{opacity:0;transition-duration:0.25s;}#chatdata .chat .hiddentime:hover{opacity:1;}#chatdata .hidechat{display:none;}.full-width{width:100%;}#musicname,#musiclrc{word-break:break-all;}#blur-img{position:fixed;height:120vh;left:-10%;width:120vw;overflow:hidden;top:-10%;z-index:-1;}.blur-mask{display:none;position:absolute;width:100%;height:100%;background-color:#000;filter:alpha(opacity=30);-moz-opacity:0.3;opacity:0.3;top:0;left:0;overflow:hidden;}.blured-img,#blurimgsrc{width:100%;height:100%;}.table tr td,.table tr th{white-space:nowrap;}::-webkit-scrollbar{width:10px;height:10px;background:rgba(0,0,0,0);}::-webkit-scrollbar-thumb{background:#009688;border-radius:8px;margin-left:2px;margin-right:2px;}::-webkit-scrollbar-corner{background:rgba(0,0,0,0);}.actionInput a{cursor:pointer;}.livechat{margin-bottom:80px;}</style>
+		<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.min.js"></script>
+	</head>
+	<body class="blue-grey darken-4 white-text" onclick="checkElement(event)">
+		<div id="blur-img" style="opacity: 1;">
+			<svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="blurred_flv8ppoyf" class="blured-img" viewBox="0 0 2304 978" preserveAspectRatio="none">
+				<filter id="blur_flv8ppoyf">
+					<feGaussianBlur in="SourceGraphic" stdDeviation="50"></feGaussianBlur>
+				</filter>
+				<image x="0" y="0" externalResourcesRequired="true" xlink:href="" id="blurimgsrc" style="filter:url(#blur_flv8ppoyf)" preserveAspectRatio="none"></image>
+			</svg>
+			<div class="blur-mask" style="display: block;"></div>
+		</div>
+		<div class="container" id="app">
+			<div class="row">
+				<div class="col s12 m8">
+					<div class="col s12 m4">
+						<img src="" id="musicpic" title="点击静音/取消静音" v-bind:src="playingMusic.cover" onclick="setPause()" style="cursor:pointer;transition-duration:0.2s;display:none;width: 90%;padding: 4px;border: 32px solid #151515;border-radius: 50%;background: rgb(191, 20, 20);margin-top: 5%;margin-left:5%;box-shadow:0px 0px 8px #000;" onerror="this.style.display='none'" />
+					</div>
+					<div class="col s12 m8">
+						<h5>正在播放</h5>
+						<p id="musicname">{{playingMusic.name}}</p>
+						<br>
+						<h5>歌词</h5>
+						<p id="musiclrc">{{playingMusic.lrc}}</p>
+						<p><small id="usedtime">00:00:00</small><small id="endtime" class="right-align" style="display: block;margin-top: -18px;">00:00:00</small></p>
+						<div class="progress">
+							<div class="determinate" id="played" style="width: 0%"></div>
+						</div>
+						<p style="text-align:right;cursor:pointer;">
+							<span onclick="if(volrange.style.display=='none'){$(volrange).fadeIn();}else{$(volrange).fadeOut();}">音量控制</span>&nbsp;&nbsp;&nbsp;
+							<input type="range" value="1" min="0" max="1" step="0.01" id="volrange"
+								style="display:none;transition-duration: 0.2s;border: 0px;width: 30%;position: relative;top: -4px;"
+								onmousemove="playAudio.volume=this.value"
+								onchange="localStorage.setItem('volume', this.value)" />
+						</p>
+					</div>
+					<div class="col s12 m12">
+						<br>
+						<h5>播放列表</h5>
+						<p>以下为等待播放的歌曲</p>
+						<div style="overflow: auto;max-height:512px;">
+							<table class="table responsive-table" id="musicList"></table>
+						</div>
+						<audio src="" id="playAudio" ref="playAudio" style="width: 0px;height: 0px;opacity: 0;" autoplay></audio>
+					</div>
+				</div>
+				<div class="col s12 m4 livechat">
+					<h5>实时聊天</h5>
+					<p>当前一共在线 <online id="online-user">{{onlineUser}}</online> 人</p>
+					<div id="chatdata" ref="chatDataBox"><button onclick="connect()" class="btn btn-primary">连接服务器</button>
+						<div class="chat chat-9898132 hidechat" style="display: block;" v-for="msg in historyMsg">
+							<div class="msgbox">
+								<small class="name">{{ msg.from }}</small>
+								<div class="msg" title="{{ msg.time }}">{{ msg.text }}</div>
+							</div>
+						</div>
+					</div>
+					<div class="input-group">
+						<input type="text" id="msginput" v-model="msgInput" class="form-control input white-text" placeholder="消息内容"  style="width: 70%;"></input>
+
+
+						<span class="input-group-btn" >
+							<button  @click="onSendMsg" id="sendmsgbtn" class="btn btn-primary" style="width: 25%;" >发送</button>
+						</span>
+
+						 <button onclick="checkInput()" id="opensearch" class="btn btn-primary">搜索音乐</button>
+						 <button onclick="msginput.value='投票切歌';sendmsg();"   class="btn btn-primary">投票切歌</button>
+						 <button onclick="msginput.value='小点声';sendmsg();" class="btn btn-primary">小声</button>
+						 <button onclick="msginput.value='大点声';sendmsg();"  class="btn btn-primary">大声</button>
+
+					</div>
+					<p>点歌方式一：输入 [点歌 歌名] 即可点歌。<br>例如：点歌 稻香<br></p>
+					<p>点歌方式二：输入歌名，点上方 [搜索音乐]按钮，然后选择你要的音乐。</p>
+					<p>遇到不好听的歌可以点击 [投票切歌]，超过在线人数30%就会切歌。</p>
+					<p>自己点的歌可以输入指定的序号，如 [删除音乐 5]，就可以删除。</p>
+					<p>输入 [设置昵称 名字] 即可设置自己的昵称，必须四个字以上，仅限当前客户端的 IP 地址有效。</p>
+					<p>管理员指令：
+					 <p class="actionInput">
+						<a onclick="msginput.value='切歌';sendmsg();">[ 切歌 ]</a>&nbsp;&nbsp;
+						<a onclick="msginput.value='置顶 '; ">[ 置顶 ] </a>&nbsp;&nbsp;
+
+					</p>
+					[置顶 3]代表置顶id为3的歌</p> [禁言 ip]（把指定的人禁言）</p>[解禁]，[禁言列表]，[加黑名单] (把当前歌曲加入黑名单)。</p>
+					<iframe src="/search.php" style="display: none;border: 0px;width: 100%;height: 700px;width: 800px;position: fixed;top: 10%;left: 15%;background: #F1F1F1;border: 12px solid rgba(255,255,255,0.0);border-radius: 8px;box-shadow: 0px 0px 16px rgba(0,0,0,0.8);" id="search"></iframe>
+<!--					<iframe src="/face.html?s=3" style="display: none;border: 0px;width: 70vw;height: 70vh;position: fixed;top: 15vh;left: 15vw;background: #F1F1F1;border: 12px solid rgba(255,255,255,0.0);border-radius: 8px;box-shadow: 0px 0px 16px rgba(0,0,0,0.8);" id="faces"></iframe>-->
+				</div>
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript" src="./js/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/materialize.min.js"></script>
+	<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+
+	<script>
+		var ws_hostname = 'ws://'+self.location.hostname+':9501/';
+		var websocket;
+		var playAudio = new Audio();
+		var lrcObj = {};//歌词
+		var rotate = 0;
+		var paused = false;
+		var openedEmoji = false;
+		var lastVol = 0;
+		var last_input = "";
+		var inputGroupCss = "position: fixed;width:100%;bottom: 0px;left: 0px;padding-bottom:12px;padding-left: 12px;padding-right:12px;background:rgba(39,50,56,0.85);box-shadow: 0px 0px 8px rgba(0,0,0,0.5);";
+
+
+		new Vue({
+			el: '#app',
+			data: {
+				ws_connected:false,
+				msgInput:'', //待发送的消息
+				onlineUser:0,//在线人数
+				historyMsg: [], //历史消息
+				isPlayMusic:false,//是否正在播放
+				playingMusic:{
+					'name':'Loading...',
+					'src':'',
+					'lrc':'Loading...'
+				}//播放中的音乐
+			},
+			methods: {
+				onChat:function(chat){
+					console.log("chat:",chat);
+					if (chat == "大点声")
+					{
+						playAudio.volume += 0.1;
+						localStorage.setItem('volume', musicControl.volume);
+						window.localStorage.setItem('volume', musicControl.volume);
+						this.printMsg('有人调高了一丢丢音量');
+						return ;
+					}
+					if (chat == "小点声")
+					{
+						playAudio.volume -= 0.1;
+						localStorage.setItem('volume', playAudio.volume);
+						window.localStorage.setItem('volume', playAudio.volume);
+						this.printMsg('有人调低了一丢丢音量');
+						return ;
+					}
+
+					var msg = {
+						'from':chat.user,
+						'text':chat.data,
+						'time':chat.time
+					};
+					this.historyMsg.push(msg);
+					window.localStorage.setItem("historyMsg", JSON.stringify(this.historyMsg));
+				},
+				onSendMsg:function(){
+					console.log("onSendMsg")
+					var message = this.msgInput;
+					if(message == "") {
+						alert("消息不能为空");
+						return;
+					}
+					var wait_send = {
+						type: "msg",
+						data: message
+					};
+					websocket.send(JSON.stringify(wait_send));
+					this.msgInput = "";
+				},
+				onPlayMusic:function (data) {
+					console.log("播放音乐:",data);
+					let music_title = data.artists + " - " + data.name;
+					let setVolume = localStorage.getItem("volume");
+					//设置音量🔊
+					playAudio.volume = (setVolume == null || setVolume == undefined) ? 0.5 : setVolume;
+					//设置页面标题
+					document.title = music_title + " - 在线点歌台";
+
+					this.playingMusic.src = data.file;
+					this.playingMusic.name = music_title + ", 专辑 《" + data.album + "》";
+					this.playingMusic = {
+						src:data.file,
+						name:music_title + ", 专辑 《" + data.album + "》",
+						cover:data.image
+					};
+
+					playAudio.src = data.file;
+					playAudio.pause();
+					rotate = 0;
+					$("#blurimgsrc").attr("xlink:href", data.image);
+					$(musicpic).fadeIn();
+					lrcObj = parseLyric(data.lrcs);
+					setTimeout(function() {
+						//如果有正在播放歌曲则增加一秒时间
+						if(typeof data.current != 'undefined') {
+							playAudio.currentTime = data.current + 1;
+						}
+						console.log("开始播放音乐")
+						playAudio.play();
+					}, 1000);
+				},
+				printMsg:function (msg) {
+					$("#chatdata").append("<center><span class='sysmsg'>" + msg + "</span></center>");
+					this.$refs.chatDataBox.scrollTop = this.$refs.chatDataBox.scrollHeight;
+					console.log("vue打印消息")
+				},
+				handleMessageEvent:function (data) {
+					console.log("响应消息:",data);
+					var json = JSON.parse(data);
+					if(typeof json !== undefined) {
+						switch(json.type) {
+							case "msg":
+								this.printMsg(json.data);
+								break;
+							case "chat":
+								this.onChat(json);
+								break;
+							case "music":
+								this.onPlayMusic(json);
+								break;
+							case "list":
+								musicList.innerHTML = json.data;
+								break;
+							case "online":
+								if (this.onlineUser != json.data){
+									this.onlineUser = json.data;
+								}
+								break;
+							case "setname":
+								window.localStorage.setItem("username", json.data);
+								break;
+							default:
+								this.printMsg("未知消息类型: " + json.type);
+						}
+					}
+				},
+				// 连接服务器
+				connectWebSocket:function() {
+					var that = this;
+					console.log("vue链接ws")
+					websocket = new WebSocket(ws_hostname);
+					websocket.onopen = function (event) {
+						that.ws_connected = true;
+						var historyMsg = window.localStorage.getItem("historyMsg");
+						if (historyMsg){
+							that.historyMsg = JSON.parse(historyMsg);
+							console.log("初始化聊天记录:",that.historyMsg);
+						}
+						var userNick = window.localStorage.getItem("username");
+						if(userNick != null && userNick != undefined) {
+							websocket.send('{"type":"msg","data":"设置昵称 ' + userNick + '"}');
+						}
+					};
+					websocket.onclose = function (event) {
+						ws_connected = false;
+						setTimeout("connect()", 5000);
+					};
+					websocket.onmessage = function (event) {
+						that.handleMessageEvent(event.data);
+					};
+					websocket.onerror = function (event, e) {
+						ws_connected = false;
+					};
+				}
+
+			},
+			mounted(){
+				this.playAudio = this.$ref.playAudio;
+
+
+				//--创建页面监听，等待微信端页面加载完毕 触发音频播放
+				document.addEventListener('DOMContentLoaded', function () {
+					function audioAutoPlay() {
+						var audio = document.getElementById('playAudio');
+						audio.play();
+						document.addEventListener("WeixinJSBridgeReady", function () {
+							audio.play();
+						}, false);
+					}
+					audioAutoPlay();
+				});
+				//--创建触摸监听，当浏览器打开页面时，触摸屏幕触发事件，进行音频播放
+				document.addEventListener('touchstart', function () {
+					function audioAutoPlay() {
+						var audio = document.getElementById('playAudio');
+						audio.play();
+					}
+					audioAutoPlay();
+				});
+
+			},
+			created(){
+				var that = this;
+				this.connectWebSocket();
+				//心跳💓
+				setInterval(function() {
+					if(that.ws_connected) {
+						websocket.send('{"type":"heartbeat"}');
+					}
+				}, 5000);
+
+				$("#msginput").keydown(function(e) {
+					if(e.keyCode == 13){
+						that.onSendMsg()
+					}
+				});
+
+				setInterval(function() {
+					var curTime = playAudio.currentTime.toFixed();
+					if(lrcObj[curTime] != undefined && lrcObj[curTime] != "") {
+						musiclrc.innerText = lrcObj[curTime];
+					}
+				}, 1000);
+
+				setInterval(function() {
+					played.style.width = ((playAudio.currentTime / playAudio.duration) * 100) + "%";
+					usedtime.innerText = formatSeconds(playAudio.currentTime);
+					endtime.innerText = formatSeconds(playAudio.duration - playAudio.currentTime);
+				}, 100);
+
+				//歌曲封面旋转
+				setInterval(function() {
+					if(!paused) {
+						rotate = rotate + 1;
+						musicpic.style.transform = "rotate(" + rotate + "deg)";
+					}
+					if(document.body.clientWidth <= 600) {
+						$(".input-group").attr("style", inputGroupCss);
+					} else {
+						$(".input-group").attr("style", "");
+					}
+				}, 100);
+			}
+		})
+		// 搜索功能
+		function checkInput() {
+			var userInput = $("#msginput").val();
+			let lastkeyword = localStorage.getItem("keyword");
+			userInput = userInput.replace(/点歌 /g, "");
+			if(userInput != "") {
+				if(userInput != lastkeyword)
+				{
+				search.src = "search.php?s=" + encodeURIComponent(userInput);
+				}
+				setTimeout("$(search).fadeIn();", 500);
+				openedEmoji = true;
+				//这里仅适用于migu的ID
+				if((userInput.indexOf("6") != 0) || (userInput.length != 11))
+				{
+					localStorage.setItem('keyword', userInput);
+				}
+			}
+		}
+				// 搜索功能
+		function searchsinger(msg) {
+			var userInput = msg;
+
+			if(userInput != "") {
+
+				search.src = "search.php?s=" + encodeURIComponent(userInput);
+
+				setTimeout("$(search).fadeIn();", 1000);
+
+				openedEmoji = true;
+			}
+		}
+		// 暂停音乐
+		function setPause() {
+			if(paused) {
+				playAudio.volume = lastVol;
+				paused = false;
+			} else {
+				lastVol = playAudio.volume;
+				playAudio.volume = 0;
+				paused = true;
+			}
+		}
+
+		// 关闭窗口
+		function checkElement(event) {
+			// if(openedEmoji && event.target != faces && event.target != openfaces && event.target != search && event.target != opensearch  && event.target.id != "searchsinger" ) {
+			// 	$(faces).fadeOut();
+			// 	$(search).fadeOut();
+			// 	openedEmoji = false;
+			// }
+		}
+
+		// 解析 Lrc 格式歌词
+		function parseLyric(text) {
+			var lyrics = text.split("\n");
+			var lrcObj = {};
+			for(var i=0;i<lyrics.length;i++){
+				var lyric = decodeURIComponent(lyrics[i]);
+				var timeReg = /\[\d*:\d*((\.|\:)\d*)*\]/g;
+				var timeRegExpArr = lyric.match(timeReg);
+				if(!timeRegExpArr)continue;
+				var clause = lyric.replace(timeReg,'');
+				for(var k = 0,h = timeRegExpArr.length;k < h;k++) {
+					var t = timeRegExpArr[k];
+					var min = Number(String(t.match(/\[\d*/i)).slice(1)),
+					sec = Number(String(t.match(/\:\d*/i)).slice(1));
+					var time = min * 60 + sec;
+					lrcObj[time] = clause;
+				}
+			}
+			return lrcObj;
+		}
+
+		// 聊天内容
+		function chat(data) {
+			if (data.data == "大点声")
+			{
+				musicControl.volume += 0.1;
+				localStorage.setItem('volume', musicControl.volume);
+				window.localStorage.setItem('volume', musicControl.volume);
+				print('有人调高了一丢丢音量');
+				return ;
+			}
+			if (data.data == "小点声")
+			{
+				musicControl.volume -= 0.1;
+				localStorage.setItem('volume', musicControl.volume);
+				window.localStorage.setItem('volume', musicControl.volume);
+				print('有人调低了一丢丢音量');
+				return ;
+			}
+			if (data.data == "刷新页面")
+			{
+				window.location.reload();
+				return ;
+			}
+			if (data.data == "同步")
+			{
+				setTimeout(function() { musicControl.currentTime = 1; }, 1000);
+				return ;
+			}
+			var regexp = new RegExp(/#([0-9]{1,2}).(jpg|png|gif)#/g);
+			data.data = data.data.replace(regexp, "<img src='/face/$1.$2' />");
+			var randid = Math.floor(Math.random() * 10000000);
+			$("#chatdata").append("<div class='chat chat-" + randid + " hidechat'><div class='msgbox'><small class='name'>" + data.user + "</small><div class='msg' title='" + data.time + "'>" + data.data + "</div></div></div>");
+			$(".chat-" + randid).fadeIn();
+			chatdata.scrollTop = chatdata.scrollHeight;
+		}
+
+		// 转换时间格式
+		function formatSeconds(value) {
+			if(value == null || value == undefined) value = 0;
+			var secondTime = parseInt(value);
+			var minuteTime = 0;
+			var hourTime = 0;
+			if(secondTime > 60) {
+				minuteTime = parseInt(secondTime / 60);
+				secondTime = parseInt(secondTime % 60);
+				if(minuteTime > 60) {
+					hourTime = parseInt(minuteTime / 60);
+					minuteTime = parseInt(minuteTime % 60);
+				}
+			}
+			secondTime = parseInt(secondTime);
+			minuteTime = parseInt(minuteTime);
+			hourTime   = parseInt(hourTime);
+			if(secondTime < 10) secondTime = "0" + parseInt(secondTime);
+			if(minuteTime < 10) minuteTime = "0" + parseInt(minuteTime);
+			if(hourTime < 10) hourTime = "0" + parseInt(hourTime);
+			return hourTime + ":" + minuteTime + ":" + secondTime;
+		}
+	</script>
+</html>
